@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * handles authentication-related logic such as
@@ -46,8 +47,15 @@ public class AuthService {
         repo.save(user);
 
         //generate a JWT token using the user's email and return the tokens
-        String token = jwtService.generateToken(new HashMap<>(), user.getEmail());
+        // String token = jwtService.generateToken(new HashMap<>(), user.getEmail());
+        // return AuthResponse.builder().token(token).build();
+
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", user.getRole());
+
+        String token = jwtService.generateToken(claims, user.getEmail());
         return AuthResponse.builder().token(token).build();
+
     }
 
     /**
