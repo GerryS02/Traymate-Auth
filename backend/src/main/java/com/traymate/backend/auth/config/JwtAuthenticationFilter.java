@@ -94,7 +94,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // TEMP: allow testing without token
-        return path.startsWith("/admin/residents");
+        return path.startsWith("/admin/**");
     }
 
 
