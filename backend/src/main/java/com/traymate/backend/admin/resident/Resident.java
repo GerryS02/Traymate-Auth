@@ -60,8 +60,9 @@ public class Resident {
 
     // PRIMARY KEY — matches DB
     @Id
-    @Column(name = "resident_id")
-    private String residentId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "residentID")
+    private Integer id;
 
     @Column(name = "first_name")
     private String firstName;

@@ -15,9 +15,9 @@ public class ResidentService {
     public Resident createResident(CreateResidentRequest req) {
 
         // basic validation
-        if (repository.findByResidentId(req.getResidentId()).isPresent()) {
-            throw new AuthException("Resident ID already exists");
-        }
+        // if (repository.findByResidentId(req.getResidentId()).isPresent()) {
+        //     throw new AuthException("Resident ID already exists");
+        // }
 
         if (req.getEmail() != null &&
             repository.findByEmail(req.getEmail()).isPresent()) {
@@ -30,7 +30,7 @@ public class ResidentService {
                 .lastName(req.getLastName())
                 .dob(req.getDob())
                 .gender(req.getGender())
-                .residentId(req.getResidentId())
+                //.residentId(req.getResidentId())
                 .email(req.getEmail())
                 .phone(req.getPhone())
                 .emergencyContact(req.getEmergencyContact())
