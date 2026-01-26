@@ -54,7 +54,7 @@ public class JwtTokenService {
     }
 
     //parses and validates the JWT token and returns all claims
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()

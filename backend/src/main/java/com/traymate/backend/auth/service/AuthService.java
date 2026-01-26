@@ -75,6 +75,9 @@ public class AuthService {
             throw new AuthException("Invalid email or password");
         }
 
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", user.getRole()); //add roles in the token
+
         //generate a JWT token after successful authentication and return the tokens
         String token = jwtService.generateToken(new HashMap<>(), user.getEmail());
         return AuthResponse.builder().token(token).build();
