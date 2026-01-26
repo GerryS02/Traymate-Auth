@@ -19,10 +19,10 @@ public class ResidentService {
         //     throw new AuthException("Resident ID already exists");
         // }
 
-        if (req.getEmail() != null &&
-            repository.findByEmail(req.getEmail()).isPresent()) {
-            throw new AuthException("Resident email already exists");
-        }
+        // if (req.getEmail() != null &&
+        //     repository.findByEmail(req.getEmail()).isPresent()) {
+        //     throw new AuthException("Resident email already exists");
+        // }
 
         Resident resident = Resident.builder()
                 .firstName(req.getFirstName())
@@ -31,7 +31,7 @@ public class ResidentService {
                 .dob(req.getDob())
                 .gender(req.getGender())
                 //.residentId(req.getResidentId())
-                .email(req.getEmail())
+                //.email(req.getEmail())
                 .phone(req.getPhone())
                 .emergencyContact(req.getEmergencyContact())
                 .emergencyPhone(req.getEmergencyPhone())

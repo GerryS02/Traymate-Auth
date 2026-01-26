@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 // @Entity
 // @Table(name = "residents")
@@ -73,14 +74,22 @@ public class Resident {
     @Column(name = "last_name")
     private String lastName;
 
+    //@Column(name = "dob")
+    //private LocalDate dob;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @Column(name = "dob")
     private LocalDate dob;
 
+    // @Column(name = "gender")
+    // private String gender;
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private String gender;
+    private Gender gender;
 
-    @Column(name = "email")
-    private String email;
+
+    //@Column(name = "email")
+    // @Column(nullable = true)
+    // private String email;
 
     @Column(name = "phone")
     private String phone;

@@ -1,5 +1,6 @@
 package com.traymate.backend.admin.resident.dto;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.traymate.backend.admin.resident.Gender;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -11,11 +12,13 @@ public class CreateResidentRequest {
     private String middleName;
     private String lastName;
 
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dob;
-    private String gender;
 
-    private String residentId;
-    private String email;
+    private Gender gender;
+
+    //private String residentId;
+    //private String email;
     private String phone;
 
     private String emergencyContact;
