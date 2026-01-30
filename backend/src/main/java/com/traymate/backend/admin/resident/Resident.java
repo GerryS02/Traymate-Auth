@@ -114,4 +114,7 @@ public class Resident {
 
     @Column(name = "medications")
     private String medications;
+
+    @Column(name = "room_number")
+    private String roomNumber;
 }

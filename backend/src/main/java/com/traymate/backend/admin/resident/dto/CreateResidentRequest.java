@@ -30,5 +30,7 @@ public class CreateResidentRequest {
     private String medicalConditions;
     private String foodAllergies;
     private String medications;
+
+    private String roomNumber;
 }
 

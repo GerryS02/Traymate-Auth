@@ -40,6 +40,7 @@ public class ResidentService {
                 .medicalConditions(req.getMedicalConditions())
                 .foodAllergies(req.getFoodAllergies())
                 .medications(req.getMedications())
+                .roomNumber(req.getRoomNumber())
                 .build();
 
         return repository.save(resident);
