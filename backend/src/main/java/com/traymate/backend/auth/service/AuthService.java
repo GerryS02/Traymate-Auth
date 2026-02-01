@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
+
 /**
  * handles authentication-related logic such as
  * user registration and login.
@@ -34,6 +38,25 @@ public class AuthService {
      */
 
     public AuthResponse register(RegisterRequest req) {
+
+        // Normalize email
+        String email = req.getEmail().toLowerCase().trim();
+
+        // Enforce @traymate.com domain
+        if (!email.endsWith("@traymate.com")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Email must end with @traymate.com"
+            );
+        }
+
+        // Enforce unique email
+        if (repo.existsByEmail(email)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Email already exists"
+            );
+        }
 
         //build a new User entity from the request data
         User user = User.builder()
@@ -89,7 +112,7 @@ public class AuthService {
 
         return AuthResponse.builder()
                 .token(token)
-                .role(user.getRole())   // 👈 THIS is the key
+                .role(user.getRole())   
                 .build();
     }
 
