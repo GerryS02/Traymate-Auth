@@ -79,16 +79,20 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/auth/login").permitAll()
+
+                // ADMIN only
                 .requestMatchers("/auth/register").hasAuthority("ROLE_ADMIN")
                 // .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/admin/**").permitAll() //change later to role base access control
+                
+                // everything else needs a token
                 .anyRequest().authenticated()
-            );
+            )
 
-            // .addFilterBefore(
-            //     jwtAuthenticationFilter,
-            //     UsernamePasswordAuthenticationFilter.class
-            // );
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }

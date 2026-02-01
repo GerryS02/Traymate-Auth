@@ -89,13 +89,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userRepository = userRepository;
     }
 
-    @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
+    // @Override
+    // protected boolean shouldNotFilter(HttpServletRequest request) {
+    //     String path = request.getRequestURI();
 
-        // TEMP: allow testing without token
-        return path.startsWith("/admin/");
-    }
+    //     // TEMP: allow testing without token
+    //     return path.startsWith("/admin/");
+    // }
 
 
     @Override
