@@ -1,3 +1,4 @@
+//get request for residents
 package com.traymate.backend.admin.resident;
 
 import com.traymate.backend.admin.resident.dto.ResidentCardDto;
