@@ -13,7 +13,7 @@ public class AdminResidentAssignmentController {
 
     private final AdminAssignmentService assignmentService;
 
-    @PutMapping("/{residentId}/assign")
+    @PostMapping("/{residentId}/assign")
     public Resident assignResident(
             @PathVariable Integer residentId,
             @RequestBody AssignCaregiverRequest request
