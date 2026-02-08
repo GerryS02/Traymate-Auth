@@ -1,8 +1,3 @@
-// package com.traymate.backend.admin.assignment;
-
-// public class AdminAssignmentController {
-    
-// }
 package com.traymate.backend.admin.assignment;
 
 import com.traymate.backend.admin.assignment.dto.AssignResidentRequest;
