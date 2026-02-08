@@ -1,6 +1,5 @@
 package com.traymate.backend.admin.assignment;
 
-import com.traymate.backend.admin.assignment.dto.AssignmentStatsDto;
 import com.traymate.backend.admin.resident.Resident;
 import com.traymate.backend.admin.resident.ResidentRepository;
 import com.traymate.backend.auth.model.User;
@@ -36,13 +35,5 @@ public class AdminAssignmentService {
         }
 
         return residentRepository.save(resident);
-    }
-
-    public AssignmentStatsDto getStats() {
-        return new AssignmentStatsDto(
-                residentRepository.count(),
-                residentRepository.countByCaregiverIsNotNull(),
-                residentRepository.countByCaregiverIsNull()
-        );
     }
 }

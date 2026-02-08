@@ -1,8 +1,3 @@
-// package com.traymate.backend.admin.assignment.dto;
-
-// public class AssignResidentRequest {
-    
-// }
 
 package com.traymate.backend.admin.assignment.dto;
 
