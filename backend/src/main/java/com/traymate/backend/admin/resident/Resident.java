@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.traymate.backend.auth.model.User;
 
 // @Entity
@@ -122,6 +123,7 @@ public class Resident {
     //to assign caregivers to residents
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "caregiver_id")
+    @JsonIgnore // optional but recommended
     private User caregiver;
 
 }
