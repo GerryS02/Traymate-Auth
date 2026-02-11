@@ -19,7 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+//import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 
 /**
@@ -28,61 +28,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
  * authenticated user in Spring Security's context.
 */
 
-// @Component
-// public class JwtAuthenticationFilter extends OncePerRequestFilter {
-
-//     private final JwtTokenService jwtService;
-//     private final UserRepository userRepository;
-
-//     public JwtAuthenticationFilter(
-//             JwtTokenService jwtService,
-//             UserRepository userRepository) {
-//         this.jwtService = jwtService;
-//         this.userRepository = userRepository;
-//     }
-
-//     @Override
-//     protected void doFilterInternal(
-//             HttpServletRequest request,
-//             HttpServletResponse response,
-//             FilterChain filterChain)
-//             throws ServletException, IOException {
-
-//         final String authHeader = request.getHeader("Authorization");
-
-//         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-//             filterChain.doFilter(request, response);
-//             return;
-//         }
-
-//         final String jwt = authHeader.substring(7);
-//         final String email = jwtService.extractEmail(jwt);
-
-//         if (email != null &&
-//             SecurityContextHolder.getContext().getAuthentication() == null) {
-
-//             userRepository.findByEmail(email).ifPresent(user -> {
-
-//                 UsernamePasswordAuthenticationToken authToken =
-//                         new UsernamePasswordAuthenticationToken(
-//                                 user,
-//                                 null,
-//                                 user.getAuthorities()
-//                         );
-
-//                 authToken.setDetails(
-//                         new WebAuthenticationDetailsSource()
-//                                 .buildDetails(request)
-//                 );
-
-//                 SecurityContextHolder.getContext()
-//                         .setAuthentication(authToken);
-//             });
-//         }
-
-//         filterChain.doFilter(request, response);
-//     }
-// }
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -109,9 +54,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-
-        System.out.println(">>> JWT FILTER HIT: " + request.getMethod() + " " + request.getRequestURI());
-
 
         String authHeader = request.getHeader("Authorization");
 
