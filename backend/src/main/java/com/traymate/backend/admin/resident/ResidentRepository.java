@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ResidentRepository extends JpaRepository<Resident, Integer> {
 
-   // Optional<Resident> findByResidentId(String residentId);
+   //Optional<Resident> findByResidentId(String residentId);
 
     //Optional<Resident> findByEmail(String email);
 

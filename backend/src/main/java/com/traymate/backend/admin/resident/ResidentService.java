@@ -1,7 +1,7 @@
 package com.traymate.backend.admin.resident;
 
 import com.traymate.backend.admin.resident.dto.CreateResidentRequest;
-import com.traymate.backend.auth.exception.AuthException;
+import com.traymate.backend.admin.resident.dto.UpdateResidentInfo;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,24 +14,12 @@ public class ResidentService {
 
     public Resident createResident(CreateResidentRequest req) {
 
-        // basic validation
-        // if (repository.findByResidentId(req.getResidentId()).isPresent()) {
-        //     throw new AuthException("Resident ID already exists");
-        // }
-
-        // if (req.getEmail() != null &&
-        //     repository.findByEmail(req.getEmail()).isPresent()) {
-        //     throw new AuthException("Resident email already exists");
-        // }
-
         Resident resident = Resident.builder()
                 .firstName(req.getFirstName())
                 .middleName(req.getMiddleName())
                 .lastName(req.getLastName())
                 .dob(req.getDob())
                 .gender(req.getGender())
-                //.residentId(req.getResidentId())
-                //.email(req.getEmail())
                 .phone(req.getPhone())
                 .emergencyContact(req.getEmergencyContact())
                 .emergencyPhone(req.getEmergencyPhone())
@@ -44,5 +32,30 @@ public class ResidentService {
                 .build();
 
         return repository.save(resident);
+    }
+
+    //update reisdent info
+    public Resident updateResident(Integer id, UpdateResidentInfo info){
+
+        Resident resident = repository.findById(id)
+                    .orElseThrow(()-> new RuntimeException("Residentnot found"));
+
+        // Split full name into first + last
+        if (info.getName() != null && !info.getName().isBlank()) {
+            String[] parts = info.getName().trim().split(" ");
+
+            resident.setFirstName(parts[0]);
+
+            if (parts.length > 1) {
+                resident.setLastName(parts[parts.length - 1]);
+            }
+        }
+
+        resident.setRoomNumber(info.getRoomNumber());
+        resident.setFoodAllergies(info.getFoodAllergies());
+        resident.setMedicalConditions(info.getMedicalConditions());
+
+        return repository.save(resident);
+
     }
 }
