@@ -85,6 +85,9 @@ public class SecurityConfig {
                 // ADMIN only
                 .requestMatchers("/auth/register").hasAuthority("ROLE_ADMIN")
                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+
+                // CAREGIVER Only
+                .requestMatchers("/caregiver/**").hasAuthority("ROLE_CAREGIVER")
                 
                 // everything else needs a token
                 .anyRequest().authenticated()

@@ -1,7 +1,6 @@
 package com.traymate.backend.admin.caregiver;
 
 import com.traymate.backend.admin.caregiver.dto.CaregiverCardDto;
-import com.traymate.backend.auth.model.User;
 import com.traymate.backend.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
