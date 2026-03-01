@@ -1,6 +1,7 @@
 package com.traymate.backend.caregiver;
 
-import com.traymate.backend.admin.resident.Resident;
+import com.traymate.backend.caregiver.dto.CaregiverResidentDto;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ public class CaregiverController {
 
     @GetMapping("/residents")
     @PreAuthorize("hasAuthority('ROLE_CAREGIVER')")
-    public List<Resident> getMyResidents() {
+    public List<CaregiverResidentDto> getMyResidents() {
         return caregiverService.getAssignedResidents();
     }
 }
