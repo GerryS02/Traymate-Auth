@@ -43,19 +43,25 @@ public class AuthService {
         String email = req.getEmail().toLowerCase().trim();
 
         // Enforce @traymate.com domain
+        // if (!email.endsWith("@traymate.com")) {
+        //     throw new ResponseStatusException(
+        //             HttpStatus.BAD_REQUEST,
+        //             "Email must end with @traymate.com"
+        //     );
+        // }
         if (!email.endsWith("@traymate.com")) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Email must end with @traymate.com"
-            );
+            throw new AuthException("Email must end with @traymate.com");
         }
 
         // Enforce unique email
+        // if (repo.existsByEmail(email)) {
+        //     throw new ResponseStatusException(
+        //             HttpStatus.CONFLICT,
+        //             "Email already exists"
+        //     );
+        // }
         if (repo.existsByEmail(email)) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "Email already exists"
-            );
+            throw new AuthException("Email already exists");
         }
 
         //build a new User entity from the request data
