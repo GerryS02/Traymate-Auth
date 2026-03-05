@@ -50,7 +50,7 @@ public class AuthService {
         //     );
         // }
         if (!email.endsWith("@traymate.com")) {
-            throw new AuthException("Email must end with @traymate.com");
+            throw new AuthException("Email must end with @traymate.com", HttpStatus.BAD_REQUEST);
         }
 
         // Enforce unique email
@@ -61,7 +61,7 @@ public class AuthService {
         //     );
         // }
         if (repo.existsByEmail(email)) {
-            throw new AuthException("Email already exists");
+            throw new AuthException("Email already exists", HttpStatus.CONFLICT);
         }
 
         //build a new User entity from the request data
@@ -96,12 +96,17 @@ public class AuthService {
     public AuthResponse login(LoginRequest req) {
 
         //find the user by email
+        // User user = repo.findByEmail(req.getEmail())
+        //         .orElseThrow(() -> new AuthException("Invalid email or password"));
         User user = repo.findByEmail(req.getEmail())
-                .orElseThrow(() -> new AuthException("Invalid email or password"));
+        .orElseThrow(() -> new AuthException("Invalid email or password", HttpStatus.UNAUTHORIZED));
 
         //compare raw password with encrypted password from database
+        // if (!encoder.matches(req.getPassword(), user.getPassword())) {
+        //     throw new AuthException("Invalid email or password");
+        // }
         if (!encoder.matches(req.getPassword(), user.getPassword())) {
-            throw new AuthException("Invalid email or password");
+            throw new AuthException("Invalid email or password", HttpStatus.UNAUTHORIZED);
         }
 
         // Map<String, Object> claims = new HashMap<>();

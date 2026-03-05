@@ -33,11 +33,10 @@ public class GlobalExceptionHandler {
 
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", Instant.now());
-        //body.put("status", HttpStatus.UNAUTHORIZED.value());
-         body.put("status", HttpStatus.BAD_REQUEST.value());
-        body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+        body.put("status", ex.getStatus().value());
+        body.put("error", ex.getStatus().getReasonPhrase());
         body.put("message", ex.getMessage());
 
-        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(body, ex.getStatus());
     }
 }
