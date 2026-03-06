@@ -47,6 +47,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     //     return path.startsWith("/admin/");
     // }
 
+    //do not filter menu
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path.startsWith("/menu/");
+    }
+
 
     @Override
     protected void doFilterInternal(
