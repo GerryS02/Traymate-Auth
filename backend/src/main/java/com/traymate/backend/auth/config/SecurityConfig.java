@@ -88,6 +88,9 @@ public class SecurityConfig {
 
                 // CAREGIVER Only
                 .requestMatchers("/caregiver/**").hasAuthority("ROLE_CAREGIVER")
+
+                //menu display
+                .requestMatchers("/menu/**").permitAll()
                 
                 // everything else needs a token
                 .anyRequest().authenticated()
