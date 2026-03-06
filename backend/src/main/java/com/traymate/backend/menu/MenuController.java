@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 //import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.annotation.security.PermitAll;
+
 import java.util.List;
 
 @RestController
@@ -14,18 +16,21 @@ public class MenuController {
     private final MenuService menuService;
 
     @GetMapping("/all")
+    @PermitAll
     //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CAREGIVER','ROLE_KITCHEN')")
     public List<Meal> getAllMeals(){
         return menuService.getAllMeals();
     }
 
     @GetMapping("/available")
+    @PermitAll
     //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CAREGIVER','ROLE_KITCHEN')")
     public List<Meal> getAvailableMeals(){
         return menuService.getAvailableMeals();
     }
 
     @GetMapping("/period/{mealperiod}")
+    @PermitAll
     public List<Meal> getMealsByPeriod(@PathVariable String mealperiod) {
         return menuService.getMealsByPeriod(mealperiod);
     }
