@@ -98,12 +98,12 @@ public class SecurityConfig {
                 // everything else needs a token
                 //.anyRequest().authenticated()
                 .anyRequest().permitAll()
-            )
-
-            .addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class
             );
+
+            // .addFilterBefore(
+            //     jwtAuthenticationFilter,
+            //     UsernamePasswordAuthenticationFilter.class
+            // );
 
         return http.build();
     }
