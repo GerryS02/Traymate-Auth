@@ -81,7 +81,7 @@ public class SecurityConfig {
 
                 //public endpoints
                 .requestMatchers("/auth/login").permitAll()
-                .requestMatchers("/menu/**").permitAll()
+                //.requestMatchers("/menu/**").permitAll()
 
                 .requestMatchers("/").permitAll()
 
@@ -93,17 +93,17 @@ public class SecurityConfig {
                 .requestMatchers("/caregiver/**").hasAuthority("ROLE_CAREGIVER")
 
                 //menu display
-                // .requestMatchers("/menu/**").permitAll()
+                .requestMatchers("/menu/**").hasAnyAuthority("ROLE_ADMIN","ROLE_CAREGIVER")
                 
                 // everything else needs a token
                 //.anyRequest().authenticated()
                 .anyRequest().permitAll()
-            );
+            )
 
-            // .addFilterBefore(
-            //     jwtAuthenticationFilter,
-            //     UsernamePasswordAuthenticationFilter.class
-            // );
+            .addFilterBefore(
+                jwtAuthenticationFilter,
+                UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }
