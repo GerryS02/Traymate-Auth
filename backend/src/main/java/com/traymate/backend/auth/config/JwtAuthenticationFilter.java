@@ -40,11 +40,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     //do not filter menu
-    // @Override
-    // protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-    //     String path = request.getServletPath();
-    //     return path.startsWith("/menu/");
-    // }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getServletPath();
+        return path.startsWith("/menu/");
+    }
 
 
     @Override
@@ -53,14 +53,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-
-        String path = request.getServletPath();
-
-        // completely bypass JWT for menu endpoints
-        if (path.startsWith("/menu")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String authHeader = request.getHeader("Authorization");
 
