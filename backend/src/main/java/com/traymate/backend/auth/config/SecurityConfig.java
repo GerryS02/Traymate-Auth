@@ -81,7 +81,7 @@ public class SecurityConfig {
 
                 //public endpoints
                 .requestMatchers("/auth/login").permitAll()
-                //.requestMatchers("/menu/**").permitAll()
+                .requestMatchers("/menu/**").permitAll()
 
                 .requestMatchers("/").permitAll()
 
@@ -93,7 +93,7 @@ public class SecurityConfig {
                 .requestMatchers("/caregiver/**").hasAuthority("ROLE_CAREGIVER")
 
                 //menu display
-                .requestMatchers("/menu/**").hasAnyAuthority("ROLE_ADMIN","ROLE_CAREGIVER")
+                //.requestMatchers("/menu/**").hasAnyAuthority("ROLE_ADMIN","ROLE_CAREGIVER")
                 
                 // everything else needs a token
                 //.anyRequest().authenticated()

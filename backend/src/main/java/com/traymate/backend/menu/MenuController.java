@@ -17,7 +17,7 @@ public class MenuController {
     
     private final MenuService menuService;
 
-    @GetMapping("/all")
+    //@GetMapping("/all")
     //@PreAuthorize("permitAll()")
     //@PermitAll
     //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CAREGIVER','ROLE_KITCHEN')")
