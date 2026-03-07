@@ -96,7 +96,8 @@ public class SecurityConfig {
                 // .requestMatchers("/menu/**").permitAll()
                 
                 // everything else needs a token
-                .anyRequest().authenticated()
+                //.anyRequest().authenticated()
+                .anyRequest().permitAll()
             )
 
             .addFilterBefore(
