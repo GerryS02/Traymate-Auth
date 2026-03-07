@@ -15,7 +15,7 @@ public class MenuService {
     }
 
     public List<Meal> getAvailableMeals(){
-        return mealRepository.findByIsAvailableTrue();
+        return mealRepository.findByAvailableTrue();
     }
 
     public List<Meal> getMealsByPeriod(String mealperiod){

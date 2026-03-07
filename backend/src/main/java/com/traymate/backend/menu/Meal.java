@@ -39,8 +39,10 @@ public class Meal {
     @Column(columnDefinition = "TEXT")
     private String tags;
 
+    @Column(name = "is_available")
     private boolean available;
 
+    @Column(name = "is_seasonal")
     private boolean seasonal;
 
     @Column(length = 1000)
