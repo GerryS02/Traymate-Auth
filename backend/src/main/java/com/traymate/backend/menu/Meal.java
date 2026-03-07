@@ -1,3 +1,4 @@
+// 
 package com.traymate.backend.menu;
 
 import jakarta.persistence.*;
@@ -11,17 +12,19 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class Meal {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
     private Integer id;
-    
+
     private String name;
 
     @Column(length = 1000)
     private String ingredients;
 
     @Column(length = 1000)
-    private String description; 
+    private String description;
 
     @Column(name = "image_url")
     private String imageUrl;
@@ -38,10 +41,12 @@ public class Meal {
     @Column(columnDefinition = "TEXT")
     private String tags;
 
+    @Column(name = "isAvailable")
     private boolean isAvailable;
+
+    @Column(name = "isSeasonal")
     private boolean isSeasonal;
 
     @Column(length = 1000)
     private String nutrition;
-
 }
