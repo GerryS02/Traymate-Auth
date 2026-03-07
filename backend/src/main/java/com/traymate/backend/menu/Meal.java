@@ -39,9 +39,9 @@ public class Meal {
     @Column(columnDefinition = "TEXT")
     private String tags;
 
-    private boolean isAvailable;
+    private boolean available;
 
-    private boolean isSeasonal;
+    private boolean seasonal;
 
     @Column(length = 1000)
     private String nutrition;
