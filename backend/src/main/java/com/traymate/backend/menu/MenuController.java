@@ -2,11 +2,11 @@ package com.traymate.backend.menu;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.security.access.prepost.PreAuthorize;
+//import org.springframework.security.access.prepost.PreAuthorize;
 //import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.annotation.security.PermitAll;
+//import jakarta.annotation.security.PermitAll;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public class MenuController {
     private final MenuService menuService;
 
     @GetMapping("/all")
-    @PreAuthorize("permitAll()")
+    //@PreAuthorize("permitAll()")
     //@PermitAll
     //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CAREGIVER','ROLE_KITCHEN')")
     public List<Meal> getAllMeals(){
@@ -26,7 +26,7 @@ public class MenuController {
     }
 
     @GetMapping("/available")
-    @PreAuthorize("permitAll()")
+    //@PreAuthorize("permitAll()")
     //@PermitAll
     //@PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_CAREGIVER','ROLE_KITCHEN')")
     public List<Meal> getAvailableMeals(){
@@ -34,7 +34,7 @@ public class MenuController {
     }
 
     @GetMapping("/period/{mealperiod}")
-    @PreAuthorize("permitAll()")
+    //@PreAuthorize("permitAll()")
     //@PermitAll
     public List<Meal> getMealsByPeriod(@PathVariable String mealperiod) {
         return menuService.getMealsByPeriod(mealperiod);
