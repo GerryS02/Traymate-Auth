@@ -1,4 +1,3 @@
-// 
 package com.traymate.backend.menu;
 
 import jakarta.persistence.*;
@@ -15,7 +14,6 @@ public class Meal {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID")
     private Integer id;
 
     private String name;
@@ -41,10 +39,8 @@ public class Meal {
     @Column(columnDefinition = "TEXT")
     private String tags;
 
-    @Column(name = "isAvailable")
     private boolean isAvailable;
 
-    @Column(name = "isSeasonal")
     private boolean isSeasonal;
 
     @Column(length = 1000)

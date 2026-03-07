@@ -57,7 +57,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // completely bypass JWT for menu endpoints
-        if (path.startsWith("/menu/")) {
+        if (path.startsWith("/menu")) {
             filterChain.doFilter(request, response);
             return;
         }
