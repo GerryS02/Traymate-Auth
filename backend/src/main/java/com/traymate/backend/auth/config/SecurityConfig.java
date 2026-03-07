@@ -78,10 +78,12 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                //public endpoints
                 .requestMatchers("/auth/login").permitAll()
+                .requestMatchers("/menu/**").permitAll()
 
                 .requestMatchers("/").permitAll()
-                .requestMatchers("/menu/**").permitAll()
 
                 // ADMIN only
                 .requestMatchers("/auth/register").hasAuthority("ROLE_ADMIN")
