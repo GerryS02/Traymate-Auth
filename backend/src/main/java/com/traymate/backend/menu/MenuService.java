@@ -19,6 +19,6 @@ public class MenuService {
     }
 
     public List<Meal> getMealsByPeriod(String mealperiod){
-        return mealRepository.findByMealperiod(mealperiod);
+        return mealRepository.findByMealperiodContainingIgnoreCase(mealperiod);
     }
 }
