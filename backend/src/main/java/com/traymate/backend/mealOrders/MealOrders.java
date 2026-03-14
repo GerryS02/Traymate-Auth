@@ -3,6 +3,8 @@ package com.traymate.backend.mealOrders;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name = "meal_orders")
 @Getter
