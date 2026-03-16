@@ -38,6 +38,7 @@ public class SecurityConfig {
                 //public endpoints
                 .requestMatchers("/auth/login").permitAll()
                 .requestMatchers("/menu/**").permitAll()
+                .requestMatchers("/mealOrders/**").permitAll()
 
                 .requestMatchers("/").permitAll()
 
