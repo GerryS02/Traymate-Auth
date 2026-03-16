@@ -21,14 +21,7 @@ public class MealOrdersController {
 
     // 2. RETRIEVE history for a specific user
 @GetMapping("/history/{userId}")
-public List<OrderResponseDTO> getUserHistory(@PathVariable String userId) {
-    // 1. Get the orders for just this user
-    List<MealOrders> orders = mealOrdersService.getUserHistory(userId);
-    
-    // 2. Map them to a response that includes the meal details
-    return orders.stream().map(order -> {
-        List<Meal> details = mealOrdersService.getDetailedMealsForOrder(order.getMealItemsIdNumbers());
-        return new OrderResponseDTO(order, details);
-    }).collect(Collectors.toList());
+public List<MealOrders> getUserHistory(@PathVariable String userId) {
+    return mealOrdersService.getUserHistory(userId);
 }
 }
