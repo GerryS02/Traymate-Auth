@@ -1,11 +1,13 @@
 package com.traymate.backend.mealOrders;
 
+import com.traymate.backend.menu.Meal; // Add this
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.stream.Collectors; // Add this
 
 @RestController
-@RequestMapping("/mealOrders") //end point name
+@RequestMapping("/mealOrders")
 @RequiredArgsConstructor
 public class MealOrdersController {
     
@@ -18,9 +20,15 @@ public class MealOrdersController {
     }
 
     // 2. RETRIEVE history for a specific user
-    @GetMapping("/history/{userId}")
-    public List<MealOrders> getHistory(@PathVariable String userId) {
-        return mealOrdersService.getUserHistory(userId);
-    }
-
+@GetMapping("/history/{userId}")
+public List<OrderResponseDTO> getUserHistory(@PathVariable String userId) {
+    // 1. Get the orders for just this user
+    List<MealOrders> orders = mealOrdersService.getUserHistory(userId);
+    
+    // 2. Map them to a response that includes the meal details
+    return orders.stream().map(order -> {
+        List<Meal> details = mealOrdersService.getDetailedMealsForOrder(order.getMealItemsIdNumbers());
+        return new OrderResponseDTO(order, details);
+    }).collect(Collectors.toList());
+}
 }
