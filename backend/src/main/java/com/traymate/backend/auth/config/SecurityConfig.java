@@ -49,6 +49,8 @@ public class SecurityConfig {
                 // CAREGIVER Only
                 .requestMatchers("/caregiver/**").hasAuthority("ROLE_CAREGIVER")
 
+                .requestMatchers("messages/**").authenticated()
+
                 // everything else needs a token
                 .anyRequest().authenticated()
                 //.anyRequest().permitAll()

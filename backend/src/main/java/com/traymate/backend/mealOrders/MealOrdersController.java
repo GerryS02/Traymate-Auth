@@ -20,8 +20,8 @@ public class MealOrdersController {
     }
 
     // 2. RETRIEVE history for a specific user
-@GetMapping("/history/{userId}")
-public List<MealOrders> getUserHistory(@PathVariable String userId) {
-    return mealOrdersService.getUserHistory(userId);
-}
+    @GetMapping("/history/{userId}")
+    public List<MealOrders> getUserHistory(@PathVariable String userId) {
+        return mealOrdersService.getUserHistory(userId);
+    }
 }
