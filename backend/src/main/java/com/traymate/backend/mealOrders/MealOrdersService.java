@@ -42,4 +42,18 @@ public class MealOrdersService {
         // 2. Query the 'meals' table for all those IDs at once
         return mealRepository.findAllById(ids);
     }
+    
+    public List<OrderResponseDTO> getUserHistoryWithDetails(String userId) {
+    // 1. Get the list of orders for the user
+    List<MealOrders> orders = mealOrdersRepository.findByUserId(userId);
+
+    // 2. Transform each order into a DTO that includes the full Meal objects
+    return orders.stream().map(order -> {
+        // Use your existing "Key" function to get the list of Meals
+        List<Meal> meals = getDetailedMealsForOrder(order.getMealItemsIdNumbers());
+        
+        // Return the combined object
+        return new OrderResponseDTO(order, meals);
+    }).collect(Collectors.toList());
+}
 }
