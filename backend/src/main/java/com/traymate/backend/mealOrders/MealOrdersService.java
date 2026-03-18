@@ -55,5 +55,18 @@ public class MealOrdersService {
         // Return the combined object
         return new OrderResponseDTO(order, meals);
     }).collect(Collectors.toList());
+  }
+  
+  // Inside MealOrdersService
+public List<OrderResponseDTO> getOrdersByMealAndDate(String mealOfDay, LocalDate date) {
+    // 1. Find the raw orders from the DB
+    List<MealOrders> orders = mealOrdersRepository.findByMealOfDayAndDate(mealOfDay, date);
+
+    // 2. Hydrate them into DTOs
+    return orders.stream().map(order -> {
+        List<Meal> meals = getDetailedMealsForOrder(order.getMealItemsIdNumbers());
+        return new OrderResponseDTO(order, meals);
+    }).collect(Collectors.toList());
 }
+  
 }

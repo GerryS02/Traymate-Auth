@@ -10,4 +10,7 @@ public interface MealOrdersRepository extends JpaRepository<MealOrders, Integer>
 
     // Optional: If you want to see all "pending" orders for the kitchen
     List<MealOrders> findByStatus(String status);
+
+    //to see all of a meal for a given day:
+    List<MealOrders> findByMealOfDayAndDate(String mealOfDay, LocalDate date);
 }

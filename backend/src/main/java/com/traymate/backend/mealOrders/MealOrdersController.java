@@ -25,4 +25,14 @@ public class MealOrdersController {
         //return mealOrdersService.getUserHistory(userId);
         return mealOrdersService.getUserHistoryWithDetails(userId);
     }
+    
+    //3. get information for a specific meal and date
+    @GetMapping("/search")
+    public List<OrderResponseDTO> searchOrders(
+      @RequestParam String mealOfDay, 
+      @RequestParam String date // We'll receive this as a String like "2026-03-18"
+    ) {
+      LocalDate localDate = LocalDate.parse(date);
+      return mealOrdersService.getOrdersByMealAndDate(mealOfDay, localDate);
+    }
 }
