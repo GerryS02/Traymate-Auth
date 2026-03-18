@@ -1,6 +1,8 @@
 package com.traymate.backend.mealOrders;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.time.LocalDate;
 import java.util.List;
 
 public interface MealOrdersRepository extends JpaRepository<MealOrders, Integer> {
