@@ -60,24 +60,24 @@ public class MealOrdersService {
     public List<MealOrders> getUserHistory(String userId) {
         return mealOrdersRepository.findByUserId(userId);
     }
-//     public MealOrders updateExistingOrderById(Integer id, MealOrders newOrderData) {
-//     // 1. Find the exact record the user wants to overwrite
-//     MealOrders existing = mealOrdersRepository.findById(id)
-//         .orElseThrow(() -> new RuntimeException("Order ID " + id + " no longer exists"));
+    public MealOrders updateExistingOrderById(Integer id, MealOrders newOrderData) {
+    // 1. Find the exact record the user wants to overwrite
+    MealOrders existing = mealOrdersRepository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Order ID " + id + " no longer exists"));
 
-//     // 2. Check status one last time (Safety Check)
-//     if (!"pending".equalsIgnoreCase(existing.getStatus())) {
-//         throw new IllegalStateException("LOCKED_STATUS");
-//     }
+    // 2. Check status one last time (Safety Check)
+    if (!"pending".equalsIgnoreCase(existing.getStatus())) {
+        throw new IllegalStateException("LOCKED_STATUS");
+    }
 
-//     // 3. Overwrite the items and any other relevant fields
-//     existing.setMealItemsIdNumbers(newOrderData.getMealItemsIdNumbers());
+    // 3. Overwrite the items and any other relevant fields
+    existing.setMealItemsIdNumbers(newOrderData.getMealItemsIdNumbers());
     
-//     // Optional: if you want to allow them to change the meal type (e.g., Lunch to Dinner)
-//     // existing.setMealOfDay(newOrderData.getMealOfDay()); 
+    // Optional: if you want to allow them to change the meal type (e.g., Lunch to Dinner)
+    // existing.setMealOfDay(newOrderData.getMealOfDay()); 
 
-//     return mealOrdersRepository.save(existing);
-// }
+    return mealOrdersRepository.save(existing);
+}
 
 
     // THIS IS THE KEY: Look up full meal details for an order
