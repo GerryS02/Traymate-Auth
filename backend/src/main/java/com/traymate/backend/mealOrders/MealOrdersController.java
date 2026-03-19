@@ -34,18 +34,32 @@ public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
         String message = e.getMessage();
         Object data = null;
 
-        // If it's a pending conflict, grab the existing order details to show the user
-        if (message.startsWith("PENDING_CONFLICT")) {
-            String id = message.split(":")[1];
-            // Look up the actual object to send back to the UI
-            data = mealOrdersRepository.findById(Integer.parseInt(id)).orElse(null);
-            message = "PENDING_CONFLICT"; // Clean up the message for the frontend
+        // If conflict, ignore the string parsing and just look it up manually
+        if (message.contains("PENDING_CONFLICT")) {
+            // Re-run the same search the service just did to get the object for the UI
+            data = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(
+                newOrder.getUserId(), 
+                newOrder.getMealOfDay(), 
+                newOrder.getDate()
+            ).orElse(null);
+            
+            message = "PENDING_CONFLICT"; 
         }
 
         ErrorResponse error = new ErrorResponse(message, "Conflict detected", data);
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 }
+
+    // @PutMapping("/{id}")
+    // public ResponseEntity<MealOrders> overwriteOrder(
+    //     @PathVariable Integer id, 
+    //     @RequestBody MealOrders updatedOrder
+    // ) {
+    //     // We use the ID from the URL to ensure we hit the right record
+    //     MealOrders saved = mealOrdersService.updateExistingOrderById(id, updatedOrder);
+    //     return ResponseEntity.ok(saved);
+    // }
 
     // 2. RETRIEVE history for a specific user
     @GetMapping("/history/{userId}")
