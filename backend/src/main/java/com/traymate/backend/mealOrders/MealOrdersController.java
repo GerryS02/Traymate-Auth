@@ -51,15 +51,15 @@ public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
     }
 }
 
-    // @PutMapping("/{id}")
-    // public ResponseEntity<MealOrders> overwriteOrder(
-    //     @PathVariable Integer id, 
-    //     @RequestBody MealOrders updatedOrder
-    // ) {
-    //     // We use the ID from the URL to ensure we hit the right record
-    //     MealOrders saved = mealOrdersService.updateExistingOrderById(id, updatedOrder);
-    //     return ResponseEntity.ok(saved);
-    // }
+    @PutMapping("/{id}")
+    public ResponseEntity<MealOrders> overwriteOrder(
+        @PathVariable Integer id, 
+        @RequestBody MealOrders updatedOrder
+    ) {
+        // We use the ID from the URL to ensure we hit the right record
+        MealOrders saved = mealOrdersService.updateExistingOrderById(id, updatedOrder);
+        return ResponseEntity.ok(saved);
+    }
 
     // 2. RETRIEVE history for a specific user
     @GetMapping("/history/{userId}")
