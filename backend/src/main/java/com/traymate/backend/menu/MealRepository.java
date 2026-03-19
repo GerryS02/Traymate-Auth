@@ -8,4 +8,6 @@ public interface MealRepository extends JpaRepository<Meal, Integer> {
     List<Meal> findByAvailableTrue();
 
     List<Meal> findByMealperiodContainingIgnoreCase(String mealperiod);
+
+    List<Meal> findByMealtypeIgnoreCase(String mealtype);
 }

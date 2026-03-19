@@ -27,4 +27,14 @@ public class MenuController {
     public List<Meal> getMealsByPeriod(@PathVariable String mealperiod) {
         return menuService.getMealsByPeriod(mealperiod);
     }
+
+    @GetMapping("/period/drinks")
+    public List<Meal> getDrinks() {
+        return menuService.getDrinks();
+    }
+
+    @GetMapping("/period/sides")
+    public List<Meal> getSides() {
+        return menuService.getSides();  
+    }
 }
