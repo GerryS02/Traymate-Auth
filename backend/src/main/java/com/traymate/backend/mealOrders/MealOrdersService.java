@@ -19,6 +19,9 @@ public class MealOrdersService {
 
 //updated logic to check at see if an order has already ben placed
     public MealOrders saveOrder(MealOrders order) {
+        if (order.getDate() == null) {
+        order.setDate(LocalDate.now());
+    }
 // 1. Check if an order already exists for this User/Meal/Date
     Optional<MealOrders> existingOrder = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(
         order.getUserId(), 
@@ -40,7 +43,7 @@ public class MealOrdersService {
         }
     }
     // 2. If no conflict, proceed as normal
-        order.setDate(LocalDate.now());
+
         order.setStatus("pending");
         return mealOrdersRepository.save(order);
     }
