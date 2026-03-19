@@ -38,7 +38,7 @@ public class MealOrdersService {
             if ("pending".equalsIgnoreCase(currentStatus)) {
                 // SOFT PROMPT: Trigger a custom exception that the UI can catch
                 // to ask "Do you want to replace your existing order?"
-                throw new IllegalStateException("PENDING_CONFLICT" + conflict.getId());
+                throw new IllegalStateException("PENDING_CONFLICT:" + conflict.getId());
             } 
             
             if ("preparing".equalsIgnoreCase(currentStatus) || "completed".equalsIgnoreCase(currentStatus)) {

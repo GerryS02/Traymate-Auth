@@ -17,6 +17,7 @@ import java.util.stream.Collectors; // Add this
 public class MealOrdersController {
     
     private final MealOrdersService mealOrdersService;
+    private final MealOrdersRepository mealOrdersRepository;
 
     // 1. SAVE a new order
 //    @PostMapping
