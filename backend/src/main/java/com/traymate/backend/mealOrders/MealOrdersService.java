@@ -41,6 +41,8 @@ public class MealOrdersService {
         //         throw new IllegalStateException("PENDING_CONFLICT:" + conflict.getId());
         //     } 
         if (existingOrder.isPresent()) {
+            String currentStatus = existingOrder.get().getStatus();
+            
             if ("pending".equalsIgnoreCase(existingOrder.get().getStatus())) {
                 throw new IllegalStateException("PENDING_CONFLICT");
         }
