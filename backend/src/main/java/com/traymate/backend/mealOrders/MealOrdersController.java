@@ -24,15 +24,25 @@ public class MealOrdersController {
 //        return mealOrdersService.saveOrder(newOrder);
 //    }
 
-    @PostMapping
-    public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
-      try {
-          MealOrders saved = mealOrdersService.saveOrder(newOrder);
-          return new ResponseEntity<>(saved, HttpStatus.CREATED);
-      } catch (IllegalStateException e) {
-          // Here is where the client-side "sees" the 409 and the specific code
-          ErrorResponse error = new ErrorResponse(e.getMessage(), "Conflict detected", null);
-          return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+@PostMapping
+public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
+    try {
+        MealOrders saved = mealOrdersService.saveOrder(newOrder);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
+    } catch (IllegalStateException e) {
+        String message = e.getMessage();
+        Object data = null;
+
+        // If it's a pending conflict, grab the existing order details to show the user
+        if (message.startsWith("PENDING_CONFLICT")) {
+            String id = message.split(":")[1];
+            // Look up the actual object to send back to the UI
+            data = mealOrdersRepository.findById(Integer.parseInt(id)).orElse(null);
+            message = "PENDING_CONFLICT"; // Clean up the message for the frontend
+        }
+
+        ErrorResponse error = new ErrorResponse(message, "Conflict detected", data);
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 }
 
