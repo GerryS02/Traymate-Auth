@@ -47,4 +47,13 @@ public class Meal {
 
     @Column(length = 1000)
     private String nutrition;
+
+    @Column(name = "Calories")
+    private Integer calories;
+
+    @Column(name = "Sodium")
+    private Integer sodium;
+
+    @Column(name = "Protein")
+    private Integer protein;
 }
