@@ -16,10 +16,22 @@ public class MealOrdersController {
     private final MealOrdersService mealOrdersService;
 
     // 1. SAVE a new order
+//    @PostMapping
+//    public MealOrders placeOrder(@RequestBody MealOrders newOrder) {
+//        return mealOrdersService.saveOrder(newOrder);
+//    }
+
     @PostMapping
-    public MealOrders placeOrder(@RequestBody MealOrders newOrder) {
-        return mealOrdersService.saveOrder(newOrder);
+    public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
+      try {
+          MealOrders saved = mealOrdersService.saveOrder(newOrder);
+          return new ResponseEntity<>(saved, HttpStatus.CREATED);
+      } catch (IllegalStateException e) {
+          // Here is where the client-side "sees" the 409 and the specific code
+          ErrorResponse error = new ErrorResponse(e.getMessage(), "Conflict detected", null);
+          return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
+}
 
     // 2. RETRIEVE history for a specific user
     @GetMapping("/history/{userId}")
@@ -37,4 +49,6 @@ public class MealOrdersController {
       LocalDate localDate = LocalDate.parse(date);
       return mealOrdersService.getOrdersByMealAndDate(mealOfDay, localDate);
     }
+
+    public static record ErrorResponse(String errorCode, String message, Object data) {}
 }

@@ -17,7 +17,29 @@ public class MealOrdersService {
     private final MealOrdersRepository mealOrdersRepository;
     private final MealRepository mealRepository; // Inject the existing menu repository
 
+//updated logic to check at see if an order has already ben placed
     public MealOrders saveOrder(MealOrders order) {
+// 1. Check if an order already exists for this User/Meal/Date
+    Optional<MealOrders> existingOrder = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(
+        order.getUserId(), 
+        order.getMealOfDay(), 
+        order.getDate()
+    );
+
+    if (existingOrder.isPresent()) {
+        String currentStatus = existingOrder.get().getStatus();
+
+        if ("pending".equalsIgnoreCase(currentStatus)) {
+            // SOFT PROMPT: Trigger a custom exception that the UI can catch
+            // to ask "Do you want to replace your existing order?"
+            throw new IllegalStateException("PENDING_CONFLICT");
+        } 
+        
+        if ("preparing".equalsIgnoreCase(currentStatus) || "completed".equalsIgnoreCase(currentStatus)) {
+            throw new IllegalStateException("LOCKED_STATUS");
+        }
+    }
+    // 2. If no conflict, proceed as normal
         order.setDate(LocalDate.now());
         order.setStatus("pending");
         return mealOrdersRepository.save(order);
@@ -26,6 +48,20 @@ public class MealOrdersService {
     public List<MealOrders> getUserHistory(String userId) {
         return mealOrdersRepository.findByUserId(userId);
     }
+
+public MealOrders updateExistingOrder(MealOrders newOrderData) {
+    // Find the record we know exists
+    MealOrders existing = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(
+        newOrderData.getUserId(), 
+        newOrderData.getMealOfDay(), 
+        newOrderData.getDate()
+    ).orElseThrow(() -> new RuntimeException("Order not found"));
+
+    // Only update the items, keep the ID and other metadata
+    existing.setMealItemsIdNumbers(newOrderData.getMealItemsIdNumbers());
+    return mealOrdersRepository.save(existing);
+}
+
 
     // THIS IS THE KEY: Look up full meal details for an order
     public List<Meal> getDetailedMealsForOrder(String mealItemsIdNumbers) {
