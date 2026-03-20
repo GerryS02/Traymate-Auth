@@ -51,8 +51,10 @@ public class SecurityConfig {
                 .requestMatchers("/caregiver/**").hasAuthority("ROLE_CAREGIVER")
 
                 .requestMatchers("messages/**").authenticated()
+                
                 //added to see errors:          
                 .requestMatchers("/error").permitAll()
+
                 // everything else needs a token
                 .anyRequest().authenticated()
                 //.anyRequest().permitAll()
