@@ -20,13 +20,13 @@ public class MenuService {
 
     public List<Meal> getMealsByPeriod(String mealperiod){
         return mealRepository.findByMealperiodContainingIgnoreCase(mealperiod);
+    }
 
     public List<Meal> getDrinks() {
-    return mealRepository.findByMealtypeIgnoreCase("Beverage");
+        return mealRepository.findByMealtypeIgnoreCase("Beverage");
     }
 
     public List<Meal> getSides() {
         return mealRepository.findByMealtypeIgnoreCase("Side");
-    }
     }
 }
