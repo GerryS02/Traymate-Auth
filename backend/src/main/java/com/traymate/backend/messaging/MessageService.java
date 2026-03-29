@@ -1,7 +1,10 @@
 package com.traymate.backend.messaging;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.traymate.backend.messaging.dto.MessageResponse;
 import com.traymate.backend.messaging.dto.SendMessageRequest;
@@ -40,8 +43,49 @@ public class MessageService {
         return repository.findByReceiverId(receiverId);
     } 
 
-    public List<Message> getConversation(Long senderId, Long receiverId){
-        return repository.findBySenderIdAndReceiverId(senderId, receiverId);
+    // public List<Message> getConversation(Long senderId, Long receiverId){
+    //     return repository.findBySenderIdAndReceiverId(senderId, receiverId);
+    // }
+
+    //full coversation + mark as read 
+     public List<Message> getConversation(Long userId, Long otherUserId){
+
+        List<Message> messages =
+                repository.findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByCreatedAtAsc(
+                        userId, otherUserId,
+                        otherUserId, userId
+                );
+
+        // auto mark as read
+        messages.stream()
+                .filter(m -> m.getReceiverId().equals(userId) && !m.getIsRead())
+                .forEach(m -> m.setIsRead(true));
+
+        repository.saveAll(messages);
+
+        return messages;
+    }
+
+    public List<Message> getChats(Long userId){
+        List<Message> allMessages =
+                repository.findBySenderIdOrReceiverIdOrderByCreatedAtDesc(userId, userId);
+        
+        // Map to store latest message per user
+        Map<Long, Message> latestChats = new HashMap<>();
+
+        for (Message msg : allMessages) {
+
+            Long otherUserId = msg.getSenderId().equals(userId)
+                    ? msg.getReceiverId()
+                    : msg.getSenderId();
+
+            // keep only latest message per user
+            if (!latestChats.containsKey(otherUserId)) {
+                latestChats.put(otherUserId, msg);
+            }
+        }
+
+        return new ArrayList<>(latestChats.values());
     }
 
 }

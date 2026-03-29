@@ -84,16 +84,24 @@ public class MessageController {
         return service.getInbox(user.getId());
     }
 
-    @GetMapping("/conversation")
+    @GetMapping("/conversation/{otherUserId}")
     public List<Message> getConversation(
-            @RequestParam Long otherUserId,
+            @PathVariable  Long otherUserId,
             Authentication authentication) {
 
         String email = authentication.getName();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow();
+        User user = userRepository.findByEmail(email).orElseThrow();
 
         return service.getConversation(user.getId(), otherUserId);
+    }
+
+    @GetMapping("/chats")
+    public List<Message> getchats(Authentication authentication){
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email).orElseThrow();
+
+        return service.getChats(user.getId());
     }
 }
