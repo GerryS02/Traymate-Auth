@@ -1,11 +1,12 @@
 package com.traymate.backend.messaging;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.traymate.backend.messaging.dto.ChatResponse;
 import com.traymate.backend.messaging.dto.MessageResponse;
 import com.traymate.backend.messaging.dto.SendMessageRequest;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +49,7 @@ public class MessageService {
     // }
 
     //full coversation + mark as read 
-     public List<Message> getConversation(Long userId, Long otherUserId){
+    public List<Message> getConversation(Long userId, Long otherUserId){
 
         List<Message> messages =
                 repository.findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByCreatedAtAsc(
@@ -66,11 +67,33 @@ public class MessageService {
         return messages;
     }
 
-    public List<Message> getChats(Long userId){
+    // public List<Message> getChats(Long userId){
+    //     List<Message> allMessages =
+    //             repository.findBySenderIdOrReceiverIdOrderByCreatedAtDesc(userId, userId);
+        
+    //     // Map to store latest message per user
+    //     Map<Long, Message> latestChats = new HashMap<>();
+
+    //     for (Message msg : allMessages) {
+
+    //         Long otherUserId = msg.getSenderId().equals(userId)
+    //                 ? msg.getReceiverId()
+    //                 : msg.getSenderId();
+
+    //         // keep only latest message per user
+    //         if (!latestChats.containsKey(otherUserId)) {
+    //             latestChats.put(otherUserId, msg);
+    //         }
+    //     }
+
+    //     return new ArrayList<>(latestChats.values());
+    // }
+
+    public List<ChatResponse> getChats(Long userId){
+
         List<Message> allMessages =
                 repository.findBySenderIdOrReceiverIdOrderByCreatedAtDesc(userId, userId);
-        
-        // Map to store latest message per user
+
         Map<Long, Message> latestChats = new HashMap<>();
 
         for (Message msg : allMessages) {
@@ -79,13 +102,21 @@ public class MessageService {
                     ? msg.getReceiverId()
                     : msg.getSenderId();
 
-            // keep only latest message per user
+            //keep only latest message per user
             if (!latestChats.containsKey(otherUserId)) {
                 latestChats.put(otherUserId, msg);
             }
         }
 
-        return new ArrayList<>(latestChats.values());
+        //convert to DTO
+        return latestChats.values().stream()
+                .map(msg -> ChatResponse.builder()
+                        .id(msg.getId())
+                        .content(msg.getContent())
+                        .createdAt(msg.getCreatedAt())
+                        .isRead(msg.getIsRead())
+                        .build())
+                .toList();
     }
-
+    
 }

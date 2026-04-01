@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication;
 
 import com.traymate.backend.auth.repository.UserRepository;
 import com.traymate.backend.auth.model.User;
-
+import com.traymate.backend.messaging.dto.ChatResponse;
 import com.traymate.backend.messaging.dto.MessageResponse;
 import com.traymate.backend.messaging.dto.SendMessageRequest;
 
@@ -96,11 +96,21 @@ public class MessageController {
         return service.getConversation(user.getId(), otherUserId);
     }
 
+    // @GetMapping("/chats")
+    // public List<Message> getchats(Authentication authentication){
+    //     String email = authentication.getName();
+
+    //     User user = userRepository.findByEmail(email).orElseThrow();
+
+    //     return service.getChats(user.getId());
+    // }
     @GetMapping("/chats")
-    public List<Message> getchats(Authentication authentication){
+    public List<ChatResponse> getChats(Authentication authentication) {
+
         String email = authentication.getName();
 
-        User user = userRepository.findByEmail(email).orElseThrow();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow();
 
         return service.getChats(user.getId());
     }
