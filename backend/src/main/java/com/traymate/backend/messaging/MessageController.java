@@ -13,43 +13,6 @@ import com.traymate.backend.messaging.dto.SendMessageRequest;
 
 import lombok.RequiredArgsConstructor;
 
-// @RestController
-// @RequestMapping("/messages")
-// @RequiredArgsConstructor
-// public class MessageController {
-    
-//     private final MessageService service;
-
-//     // SEND MESSAGE
-//     @PostMapping("/send")
-//     public MessageResponse sendMessage(
-//             @RequestBody SendMessageRequest req,
-//             Authentication authentication) {
-
-//         Long senderId = Long.parseLong(authentication.getName());
-
-//         return service.sendMessage(senderId, req);
-//     }
-
-//     // GET INBOX
-//     @GetMapping("/inbox")
-//     public List<Message> getInbox(Authentication authentication) {
-
-//         Long userId = Long.parseLong(authentication.getName());
-
-//         return service.getInbox(userId);
-//     }
-
-//     // GET CONVERSATION BETWEEN TWO USERS
-//     @GetMapping("/conversation")
-//     public List<Message> getConversation(
-//             @RequestParam Long senderId,
-//             @RequestParam Long receiverId) {
-
-//         return service.getConversation(senderId, receiverId);
-//     }
-// }
-
 @RestController
 @RequestMapping("/messages")
 @RequiredArgsConstructor
