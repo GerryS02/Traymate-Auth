@@ -121,5 +121,23 @@ public class MealOrdersService {
             return new OrderResponseDTO(order, meals);
         }).collect(Collectors.toList());
     }
-  
+ 
+    //to update the orders status:
+    // 1. Update a single resident's status
+    public MealOrders updateSingleStatus(String userId, String mealOfDay, LocalDate date, String newStatus) {
+        MealOrders order = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(userId, mealOfDay, date)
+                .orElseThrow(() -> new RuntimeException("Order not found for user " + userId));
+        
+        order.setStatus(newStatus.toLowerCase());
+        return mealOrdersRepository.save(order);
+    }
+
+    // 2. Update ALL orders for a specific meal time (Bulk Update)
+    public void updateAllStatuses(String mealOfDay, LocalDate date, String newStatus) {
+        List<MealOrders> orders = mealOrdersRepository.findByMealOfDayAndDate(mealOfDay, date);
+        
+        orders.forEach(order -> order.setStatus(newStatus.toLowerCase()));
+        mealOrdersRepository.saveAll(orders);
+    }
+ 
 }

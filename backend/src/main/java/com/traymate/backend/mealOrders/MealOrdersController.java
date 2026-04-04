@@ -79,4 +79,31 @@ public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
     }
 
     public static record ErrorResponse(String errorCode, String message, Object data) {}
+
+    //updates to change order status:
+    // 1. Single Update: PUT /mealOrders/status/single?userId=22&mealOfDay=Dinner&date=2026-03-14&newStatus=preparing
+    @PutMapping("/status/single")
+    public ResponseEntity<MealOrders> updateStatus(
+        @RequestParam String userId,
+        @RequestParam String mealOfDay,
+        @RequestParam String date,
+        @RequestParam String newStatus
+    ) {
+        LocalDate localDate = LocalDate.parse(date);
+        MealOrders updated = mealOrdersService.updateSingleStatus(userId, mealOfDay, localDate, newStatus);
+        return ResponseEntity.ok(updated);
+    }
+
+    // 2. Bulk Update: PUT /mealOrders/status/bulk?mealOfDay=Dinner&date=2026-03-14&newStatus=ready
+    @PutMapping("/status/bulk")
+    public ResponseEntity<String> updateBulkStatus(
+        @RequestParam String mealOfDay,
+        @RequestParam String date,
+        @RequestParam String newStatus
+    ) {
+        LocalDate localDate = LocalDate.parse(date);
+        mealOrdersService.updateAllStatuses(mealOfDay, localDate, newStatus);
+        return ResponseEntity.ok("All " + mealOfDay + " orders updated to " + newStatus);
+    }
+
 }
