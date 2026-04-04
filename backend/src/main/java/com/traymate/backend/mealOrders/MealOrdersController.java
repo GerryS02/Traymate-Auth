@@ -87,10 +87,11 @@ public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
         @RequestParam String userId,
         @RequestParam String mealOfDay,
         @RequestParam String date,
-        @RequestParam String newStatus
+        @RequestParam String newStatus,
+        @RequestParam(required = false) String cook // Optional so 'ready/served' doesn't require it again
     ) {
         LocalDate localDate = LocalDate.parse(date);
-        MealOrders updated = mealOrdersService.updateSingleStatus(userId, mealOfDay, localDate, newStatus);
+        MealOrders updated = mealOrdersService.updateSingleStatus(userId, mealOfDay, localDate, newStatus, cook);
         return ResponseEntity.ok(updated);
     }
 

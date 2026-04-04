@@ -124,11 +124,17 @@ public class MealOrdersService {
  
     //to update the orders status:
     // 1. Update a single resident's status
-    public MealOrders updateSingleStatus(String userId, String mealOfDay, LocalDate date, String newStatus) {
+    public MealOrders updateSingleStatus(String userId, String mealOfDay, LocalDate date, String newStatus, String cookName) {
         MealOrders order = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(userId, mealOfDay, date)
-                .orElseThrow(() -> new RuntimeException("Order not found for user " + userId));
+                .orElseThrow(() -> new RuntimeException("Order not found"));
         
         order.setStatus(newStatus.toLowerCase());
+
+        // Logic: If setting to preparing, attach the cook's name
+        if ("preparing".equalsIgnoreCase(newStatus)) {
+            order.setCook(cookName);
+        }
+
         return mealOrdersRepository.save(order);
     }
 

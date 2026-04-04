@@ -27,9 +27,12 @@ public class MealOrders {
     @Column(name = "user_id", length = 8)
     private String userId; // Matching your varchar(8) requirement
 
-    @Column(name = "status", length = 7)
+    @Column(name = "status", length = 9)
     private String status; // pending, started, served
 
     @Column(name = "meal_items_id_numbers", length = 16)
     private String mealItemsIdNumbers;
+    
+    @Column(name = "cook", length = 64)
+    private String cook;
 }
