@@ -100,11 +100,14 @@ public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
     public ResponseEntity<String> updateBulkStatus(
         @RequestParam String mealOfDay,
         @RequestParam String date,
-        @RequestParam String newStatus
+        @RequestParam String newStatus,
+        @RequestParam(required = false) String cook
     ) {
         LocalDate localDate = LocalDate.parse(date);
-        mealOrdersService.updateAllStatuses(mealOfDay, localDate, newStatus);
-        return ResponseEntity.ok("All " + mealOfDay + " orders updated to " + newStatus);
+        mealOrdersService.updateAllStatuses(mealOfDay, localDate, newStatus, cook);
+        
+        return ResponseEntity.ok("All " + mealOfDay + " orders updated to " + newStatus + 
+                                 (cook != null ? " by " + cook : ""));
     }
 
 }

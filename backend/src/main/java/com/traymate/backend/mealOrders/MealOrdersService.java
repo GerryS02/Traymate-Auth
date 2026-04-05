@@ -139,10 +139,18 @@ public class MealOrdersService {
     }
 
     // 2. Update ALL orders for a specific meal time (Bulk Update)
-    public void updateAllStatuses(String mealOfDay, LocalDate date, String newStatus) {
+    public void updateAllStatuses(String mealOfDay, LocalDate date, String newStatus, String cook) {
         List<MealOrders> orders = mealOrdersRepository.findByMealOfDayAndDate(mealOfDay, date);
         
-        orders.forEach(order -> order.setStatus(newStatus.toLowerCase()));
+        orders.forEach(order -> {
+            order.setStatus(newStatus.toLowerCase());
+            
+            // If the batch is being moved to preparing, assign the cook to all of them
+            if ("preparing".equalsIgnoreCase(newStatus)) {
+                order.setCook(cook);
+            }
+        });
+        
         mealOrdersRepository.saveAll(orders);
     }
  
