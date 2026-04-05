@@ -124,7 +124,7 @@ public class MealOrdersService {
  
     //to update the orders status:
     // 1. Update a single resident's status
-    public MealOrders updateSingleStatus(String userId, String mealOfDay, LocalDate date, String newStatus, String cookName) {
+    public MealOrders updateSingleStatus(String userId, String mealOfDay, LocalDate date, String newStatus, String cook) {
         MealOrders order = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(userId, mealOfDay, date)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         
