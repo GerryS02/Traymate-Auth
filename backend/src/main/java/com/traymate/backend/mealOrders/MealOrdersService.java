@@ -132,7 +132,7 @@ public class MealOrdersService {
 
         // Logic: If setting to preparing, attach the cook's name
         if ("preparing".equalsIgnoreCase(newStatus)) {
-            order.setCook(cookName);
+            order.setCook(cook);
         }
 
         return mealOrdersRepository.save(order);
