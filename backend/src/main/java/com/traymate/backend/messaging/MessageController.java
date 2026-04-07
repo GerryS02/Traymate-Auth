@@ -10,6 +10,7 @@ import com.traymate.backend.auth.model.User;
 import com.traymate.backend.messaging.dto.ChatResponse;
 import com.traymate.backend.messaging.dto.MessageResponse;
 import com.traymate.backend.messaging.dto.SendMessageRequest;
+import com.traymate.backend.messaging.dto.UserList;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,6 +21,7 @@ public class MessageController {
 
     private final MessageService service;
     private final UserRepository userRepository;
+    private final UserMessagingService userMessagingService;
 
     @PostMapping("/send")
     public MessageResponse sendMessage(
@@ -76,5 +78,16 @@ public class MessageController {
                 .orElseThrow();
 
         return service.getChats(user.getId());
+    }
+
+    @GetMapping("/users")
+    public List<UserList> getAllUsers(Authentication authentication) {
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow();
+
+        return userMessagingService.getAllUsers(user.getId());
     }
 }
