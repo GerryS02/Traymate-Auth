@@ -100,6 +100,7 @@ public class MessageService {
 //                 .toList();
 //     }
 
+        //new chat function
         public List<ChatResponse> getChats(Long userId) {
 
                 List<Message> allMessages =
