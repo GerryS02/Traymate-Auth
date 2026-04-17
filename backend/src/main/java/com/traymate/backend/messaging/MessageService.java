@@ -148,5 +148,18 @@ public class MessageService {
                         })
                         .toList();
         }
+
+        //delete a single message
+        public void deleteMessage(Long messageId){
+                repository.deleteById(messageId);
+        }
+
+        //delete chat (full conversation)
+        public void deleteChat(Long userId, Long otherUserId){
+                repository.deleteBySenderIdAndReceiverIdOrReceiverIdAndSenderId(
+                        userId, otherUserId,
+                        otherUserId, userId
+                );
+        }
     
 }

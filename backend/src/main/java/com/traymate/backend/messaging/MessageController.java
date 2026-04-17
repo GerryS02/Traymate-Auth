@@ -23,6 +23,7 @@ public class MessageController {
     private final UserRepository userRepository;
     private final UserMessagingService userMessagingService;
 
+    //send a message
     @PostMapping("/send")
     public MessageResponse sendMessage(
             @RequestBody SendMessageRequest req,
@@ -49,6 +50,7 @@ public class MessageController {
         return service.getInbox(user.getId());
     }
 
+    //get the entire conversation
     @GetMapping("/conversation/{otherUserId}")
     public List<Message> getConversation(
             @PathVariable  Long otherUserId,
@@ -69,6 +71,8 @@ public class MessageController {
 
     //     return service.getChats(user.getId());
     // }
+
+    //get chats
     @GetMapping("/chats")
     public List<ChatResponse> getChats(Authentication authentication) {
 
@@ -80,6 +84,7 @@ public class MessageController {
         return service.getChats(user.getId());
     }
 
+    //get list of users to message to 
     @GetMapping("/users")
     public List<UserList> getAllUsers(Authentication authentication) {
 
@@ -89,5 +94,23 @@ public class MessageController {
                 .orElseThrow();
 
         return userMessagingService.getAllUsers(user.getId());
+    }
+
+    //delete a single message
+    @DeleteMapping("/{messageId}")
+    public void deleteMEssage(@PathVariable Long messageId){
+        service.deleteMessage(messageId);
+    }
+
+    //delete conversation
+    @DeleteMapping("/chat/{otherUserId}")
+    public void deleteChat(@PathVariable Long otherUserId, Authentication authentication) {
+
+        String email = authentication.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow();
+
+        service.deleteChat(user.getId(), otherUserId);
     }
 }
