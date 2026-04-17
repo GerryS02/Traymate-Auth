@@ -47,18 +47,15 @@ public class MessageService {
         return repository.findByReceiverId(receiverId);
     } 
 
-    // public List<Message> getConversation(Long senderId, Long receiverId){
-    //     return repository.findBySenderIdAndReceiverId(senderId, receiverId);
-    // }
-
     //full coversation + mark as read 
     public List<Message> getConversation(Long userId, Long otherUserId){
 
         List<Message> messages =
-                repository.findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByCreatedAtAsc(
-                        userId, otherUserId,
-                        otherUserId, userId
-                );
+                // repository.findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByCreatedAtAsc(
+                //         userId, otherUserId,
+                //         otherUserId, userId
+                // );
+                repository.getConversation(userId, otherUserId);
 
         // auto mark as read
         messages.stream()
@@ -70,41 +67,12 @@ public class MessageService {
         return messages;
     }
 
-//     public List<ChatResponse> getChats(Long userId){
-
-//         List<Message> allMessages =
-//                 repository.findBySenderIdOrReceiverIdOrderByCreatedAtDesc(userId, userId);
-
-//         Map<Long, Message> latestChats = new HashMap<>();
-
-//         for (Message msg : allMessages) {
-
-//             Long otherUserId = msg.getSenderId().equals(userId)
-//                     ? msg.getReceiverId()
-//                     : msg.getSenderId();
-
-//             //keep only latest message per user
-//             if (!latestChats.containsKey(otherUserId)) {
-//                 latestChats.put(otherUserId, msg);
-//             }
-//         }
-
-//         //convert to DTO
-//         return latestChats.values().stream()
-//                 .map(msg -> ChatResponse.builder()
-//                         .id(msg.getId())
-//                         .content(msg.getContent())
-//                         .createdAt(msg.getCreatedAt())
-//                         .isRead(msg.getIsRead())
-//                         .build())
-//                 .toList();
-//     }
-
         //new chat function
         public List<ChatResponse> getChats(Long userId) {
 
                 List<Message> allMessages =
-                        repository.findBySenderIdOrReceiverIdOrderByCreatedAtDesc(userId, userId);
+                        // repository.findBySenderIdOrReceiverIdOrderByCreatedAtDesc(userId, userId);
+                        repository.getConversation(userId, userId);
 
                 Map<Long, Message> latestChats = new HashMap<>();
 
@@ -156,10 +124,11 @@ public class MessageService {
 
         //delete chat (full conversation)
         public void deleteChat(Long userId, Long otherUserId){
-                repository.deleteBySenderIdAndReceiverIdOrReceiverIdAndSenderId(
-                        userId, otherUserId,
-                        otherUserId, userId
-                );
+                // repository.deleteBySenderIdAndReceiverIdOrReceiverIdAndSenderId(
+                //         userId, otherUserId,
+                //         otherUserId, userId
+                // );
+                repository.deleteConversation(userId, otherUserId);
         }
     
 }
