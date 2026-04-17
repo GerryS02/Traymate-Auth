@@ -103,7 +103,7 @@ public class MessageController {
     }
 
     //delete conversation
-    @DeleteMapping("/chat/{otherUserId}")
+    @DeleteMapping("/conversation/{otherUserId}")
     public void deleteChat(@PathVariable Long otherUserId, Authentication authentication) {
 
         String email = authentication.getName();
