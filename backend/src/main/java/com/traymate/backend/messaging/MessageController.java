@@ -63,15 +63,6 @@ public class MessageController {
         return service.getConversation(user.getId(), otherUserId);
     }
 
-    // @GetMapping("/chats")
-    // public List<Message> getchats(Authentication authentication){
-    //     String email = authentication.getName();
-
-    //     User user = userRepository.findByEmail(email).orElseThrow();
-
-    //     return service.getChats(user.getId());
-    // }
-
     //get chats
     @GetMapping("/chats")
     public List<ChatResponse> getChats(Authentication authentication) {

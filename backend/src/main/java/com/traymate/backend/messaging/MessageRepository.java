@@ -12,13 +12,6 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     
     List<Message> findByReceiverId(Long receiverId);
 
-    //List<Message> findBySenderIdOrReceiverIdOrderByCreatedAtDesc(Long senderId, Long receiverId);
-
-    // List<Message> findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByCreatedAtAsc(
-    //     Long sender1, Long receiver1,
-    //     Long sender2, Long receiver2
-    // );
-
     //get conversation
     @Query("""
         SELECT m FROM Message m
@@ -32,10 +25,6 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     void deleteById(Long id);
 
     //delete the entire conversation
-    // void deleteBySenderIdAndReceiverIdOrReceiverIdAndSenderId(
-    //     Long senderId1, Long receiverId1,
-    //     Long senderId2, Long receiverId2
-    // );
     @Transactional
     @Modifying
     @Query("""
