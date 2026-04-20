@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -152,6 +153,15 @@ public class MealOrdersService {
         });
         
         mealOrdersRepository.saveAll(orders);
+    }
+    
+    
+    @Transactional
+    public void deleteOrder(String userId, String mealOfDay, LocalDate date) {
+        MealOrders order = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(userId, mealOfDay, date)
+              .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        mealOrdersRepository.delete(order);
     }
  
 }

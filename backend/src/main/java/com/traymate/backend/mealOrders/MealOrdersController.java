@@ -109,5 +109,16 @@ public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
         return ResponseEntity.ok("All " + mealOfDay + " orders updated to " + newStatus + 
                                  (cook != null ? " by " + cook : ""));
     }
-
+    
+    @DeleteMapping("/remove")
+    public ResponseEntity<String> deleteOrder(
+        @RequestParam String userId,
+        @RequestParam String mealOfDay,
+        @RequestParam String date
+    ) {
+        LocalDate localDate = LocalDate.parse(date);
+        mealOrdersService.deleteOrder(userId, mealOfDay, localDate);
+        return ResponseEntity.ok("Order removed.");
+    }    
+    
 }
