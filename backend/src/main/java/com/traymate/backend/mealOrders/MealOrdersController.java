@@ -210,3 +210,4 @@ public ResponseEntity<?> placeOrder(@RequestBody MealOrders newOrder) {
 
     public static record ErrorResponse(String errorCode, String message, Object data) {}
 }
+
