@@ -1,3 +1,16 @@
+// package com.traymate.backend.admin.resident.dto;
+
+// import lombok.AllArgsConstructor;
+// import lombok.Getter;
+
+// @Getter
+// @AllArgsConstructor
+// public class ResidentCardDto {
+//     private Integer id;
+//     private String fullName;
+//     private String roomNumber;
+//     private String foodAllergies;
+// }
 package com.traymate.backend.admin.resident.dto;
 
 import lombok.AllArgsConstructor;
@@ -9,5 +22,8 @@ public class ResidentCardDto {
     private Integer id;
     private String fullName;
     private String roomNumber;
+    private String dietaryRestrictions;
     private String foodAllergies;
+    private String medicalConditions;
+    private String medications;
 }

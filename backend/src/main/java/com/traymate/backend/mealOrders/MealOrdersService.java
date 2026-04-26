@@ -1,7 +1,170 @@
+// package com.traymate.backend.mealOrders;
+
+// import com.traymate.backend.menu.Meal;
+// import com.traymate.backend.menu.MealRepository;
+// import lombok.RequiredArgsConstructor;
+
+// import java.util.Optional;
+// import org.springframework.stereotype.Service;
+
+// import java.time.LocalDate;
+// import java.util.Arrays;
+// import java.util.List;
+// import java.util.stream.Collectors;
+
+// @Service
+// @RequiredArgsConstructor
+// public class MealOrdersService {
+
+//     private final MealOrdersRepository mealOrdersRepository;
+//     private final MealRepository mealRepository; // Inject the existing menu repository
+
+//     //updated logic to check at see if an order has already ben placed
+//     public MealOrders saveOrder(MealOrders order) {
+//         if (order.getDate() == null) {
+//             order.setDate(LocalDate.now());
+//         }
+
+//     // 1. Check if an order already exists for this User/Meal/Date
+//     Optional<MealOrders> existingOrder = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(
+//         order.getUserId(), 
+//         order.getMealOfDay(), 
+//         order.getDate()
+//     );
+
+//         // if (existingOrder.isPresent()) {
+//         //     String currentStatus = existingOrder.get().getStatus();
+
+//         //     if ("pending".equalsIgnoreCase(currentStatus)) {
+//         //         // SOFT PROMPT: Trigger a custom exception that the UI can catch
+//         //         // to ask "Do you want to replace your existing order?"
+//         //         throw new IllegalStateException("PENDING_CONFLICT:" + conflict.getId());
+//         //     } 
+//         if (existingOrder.isPresent()) {
+//             String currentStatus = existingOrder.get().getStatus();
+            
+//             if ("pending".equalsIgnoreCase(existingOrder.get().getStatus())) {
+//                 throw new IllegalStateException("PENDING_CONFLICT");
+//         }
+            
+//             if ("preparing".equalsIgnoreCase(currentStatus) || "completed".equalsIgnoreCase(currentStatus)) {
+//                 throw new IllegalStateException("LOCKED_STATUS");
+//             }
+//         }
+//         // 2. If no conflict, proceed as normal
+
+//         order.setStatus("pending");
+//         return mealOrdersRepository.save(order);
+//     }
+
+//     public List<MealOrders> getUserHistory(String userId) {
+//         return mealOrdersRepository.findByUserId(userId);
+//     }
+//     public MealOrders updateExistingOrderById(Integer id, MealOrders newOrderData) {
+//     // 1. Find the exact record the user wants to overwrite
+//     MealOrders existing = mealOrdersRepository.findById(id)
+//         .orElseThrow(() -> new RuntimeException("Order ID " + id + " no longer exists"));
+
+//     // 2. Check status one last time (Safety Check)
+//     if (!"pending".equalsIgnoreCase(existing.getStatus())) {
+//         throw new IllegalStateException("LOCKED_STATUS");
+//     }
+
+//     // 3. Overwrite the items and any other relevant fields
+//     existing.setMealItemsIdNumbers(newOrderData.getMealItemsIdNumbers());
+    
+//     // Optional: if you want to allow them to change the meal type (e.g., Lunch to Dinner)
+//     // existing.setMealOfDay(newOrderData.getMealOfDay()); 
+
+//     return mealOrdersRepository.save(existing);
+// }
+
+
+//     // THIS IS THE KEY: Look up full meal details for an order
+//     public List<Meal> getDetailedMealsForOrder(String mealItemsIdNumbers) {
+//         if (mealItemsIdNumbers == null || mealItemsIdNumbers.isEmpty()) {
+//             return List.of();
+//         }
+
+//         // 1. Split "101,102" into ["101", "102"]
+//         List<Integer> ids = Arrays.stream(mealItemsIdNumbers.split(","))
+//                 .map(String::trim)
+//                 .map(Integer::parseInt)
+//                 .collect(Collectors.toList());
+
+//         // 2. Query the 'meals' table for all those IDs at once
+//         return mealRepository.findAllById(ids);
+//     }
+    
+//     public List<OrderResponseDTO> getUserHistoryWithDetails(String userId) {
+//         // 1. Get the list of orders for the user
+//         List<MealOrders> orders = mealOrdersRepository.findByUserId(userId);
+
+//         // 2. Transform each order into a DTO that includes the full Meal objects
+//         return orders.stream().map(order -> {
+//             // Use your existing "Key" function to get the list of Meals
+//             List<Meal> meals = getDetailedMealsForOrder(order.getMealItemsIdNumbers());
+            
+//             // Return the combined object
+//             return new OrderResponseDTO(order, meals);
+//         }).collect(Collectors.toList());
+//     }
+  
+//     // Inside MealOrdersService
+//     public List<OrderResponseDTO> getOrdersByMealAndDate(String mealOfDay, LocalDate date) {
+//         // 1. Find the raw orders from the DB
+//         List<MealOrders> orders = mealOrdersRepository.findByMealOfDayAndDate(mealOfDay, date);
+
+//         // 2. Hydrate them into DTOs
+//         return orders.stream().map(order -> {
+//             List<Meal> meals = getDetailedMealsForOrder(order.getMealItemsIdNumbers());
+//             return new OrderResponseDTO(order, meals);
+//         }).collect(Collectors.toList());
+//     }
+ 
+//     //to update the orders status:
+//     // 1. Update a single resident's status
+//     public MealOrders updateSingleStatus(String userId, String mealOfDay, LocalDate date, String newStatus, String cook) {
+//         MealOrders order = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(userId, mealOfDay, date)
+//                 .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+//         order.setStatus(newStatus.toLowerCase());
+
+//         // Logic: If setting to preparing, attach the cook's name
+//         if ("preparing".equalsIgnoreCase(newStatus)) {
+//             order.setCook(cook);
+//         }
+
+//         return mealOrdersRepository.save(order);
+//     }
+
+//     // 2. Update ALL orders for a specific meal time (Bulk Update)
+//     public void updateAllStatuses(String mealOfDay, LocalDate date, String newStatus, String cook) {
+//         List<MealOrders> orders = mealOrdersRepository.findByMealOfDayAndDate(mealOfDay, date);
+        
+//         orders.forEach(order -> {
+//             order.setStatus(newStatus.toLowerCase());
+            
+//             // If the batch is being moved to preparing, assign the cook to all of them
+//             if ("preparing".equalsIgnoreCase(newStatus)) {
+//                 order.setCook(cook);
+//             }
+//         });
+        
+//         mealOrdersRepository.saveAll(orders);
+//     }
+ 
+// }
 package com.traymate.backend.mealOrders;
 
+import com.traymate.backend.admin.resident.Resident;
+import com.traymate.backend.admin.resident.ResidentRepository;
+import com.traymate.backend.compliance.DietaryComplianceService;
+import com.traymate.backend.compliance.dto.ComplianceResult;
 import com.traymate.backend.menu.Meal;
 import com.traymate.backend.menu.MealRepository;
+import com.traymate.backend.override.MedicalOverrideRequest;
+import com.traymate.backend.override.MedicalOverrideService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
@@ -18,6 +181,9 @@ public class MealOrdersService {
 
     private final MealOrdersRepository mealOrdersRepository;
     private final MealRepository mealRepository; // Inject the existing menu repository
+    private final ResidentRepository residentRepository;
+    private final DietaryComplianceService complianceService;
+    private final MedicalOverrideService overrideService;
 
     //updated logic to check at see if an order has already ben placed
     public MealOrders saveOrder(MealOrders order) {
@@ -53,8 +219,68 @@ public class MealOrdersService {
         }
         // 2. If no conflict, proceed as normal
 
+        // 3. Server-side dietary compliance gate. Mirrors the frontend
+        //    mealSafetyService.ts so a direct API call can't bypass the UI
+        //    safety net. Throws IllegalStateException("COMPLIANCE_BLOCKED")
+        //    with details so the controller can surface 422 + violation list.
+        enforceCompliance(order);
+
         order.setStatus("pending");
         return mealOrdersRepository.save(order);
+    }
+
+    /**
+     * Runs the resident's meals through DietaryComplianceService. If any
+     * meal has a violation, throws IllegalStateException with message
+     * "COMPLIANCE_BLOCKED". Caller is expected to catch and re-run the
+     * same check (or hold onto the result) when building the error body.
+     *
+     * Not a no-op when the resident/meals can't be resolved: we let the
+     * order through in that case (audit elsewhere). The point here is
+     * catching real dietary violations, not gating on data integrity.
+     */
+    private void enforceCompliance(MealOrders order) {
+        if (order.getUserId() == null || order.getMealItemsIdNumbers() == null) return;
+
+        Integer residentId;
+        try {
+            residentId = Integer.parseInt(order.getUserId().trim());
+        } catch (NumberFormatException e) {
+            return; // userId is not a resident id; skip (e.g. legacy string ids)
+        }
+
+        Optional<Resident> residentOpt = residentRepository.findById(residentId);
+        if (residentOpt.isEmpty()) return;
+
+        List<Integer> mealIds;
+        try {
+            mealIds = Arrays.stream(order.getMealItemsIdNumbers().split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+        } catch (NumberFormatException e) {
+            return;
+        }
+        if (mealIds.isEmpty()) return;
+
+        List<Meal> meals = mealRepository.findAllById(mealIds);
+        ComplianceResult result = complianceService.validate(residentOpt.get(), meals);
+        if (result.isSafe()) return;
+
+        // Not safe — see if an admin has already approved a matching override
+        // for exactly this resident + mealOfDay + date + meal id set. If so,
+        // consume the approval and let the order through. Otherwise block.
+        Optional<MedicalOverrideRequest> activeOverride = overrideService.findActiveApproval(
+            residentId, order.getMealOfDay(), order.getDate(), mealIds
+        );
+
+        if (activeOverride.isPresent()) {
+            overrideService.consume(activeOverride.get());
+            return;
+        }
+
+        throw new ComplianceBlockedException(result);
     }
 
     public List<MealOrders> getUserHistory(String userId) {
@@ -72,9 +298,13 @@ public class MealOrdersService {
 
     // 3. Overwrite the items and any other relevant fields
     existing.setMealItemsIdNumbers(newOrderData.getMealItemsIdNumbers());
-    
+
     // Optional: if you want to allow them to change the meal type (e.g., Lunch to Dinner)
-    // existing.setMealOfDay(newOrderData.getMealOfDay()); 
+    // existing.setMealOfDay(newOrderData.getMealOfDay());
+
+    // Re-run compliance on the updated contents so replacing an order
+    // can't smuggle unsafe meals past the gate.
+    enforceCompliance(existing);
 
     return mealOrdersRepository.save(existing);
 }
@@ -121,37 +351,5 @@ public class MealOrdersService {
             return new OrderResponseDTO(order, meals);
         }).collect(Collectors.toList());
     }
- 
-    //to update the orders status:
-    // 1. Update a single resident's status
-    public MealOrders updateSingleStatus(String userId, String mealOfDay, LocalDate date, String newStatus, String cook) {
-        MealOrders order = mealOrdersRepository.findByUserIdAndMealOfDayAndDate(userId, mealOfDay, date)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-        
-        order.setStatus(newStatus.toLowerCase());
-
-        // Logic: If setting to preparing, attach the cook's name
-        if ("preparing".equalsIgnoreCase(newStatus)) {
-            order.setCook(cook);
-        }
-
-        return mealOrdersRepository.save(order);
-    }
-
-    // 2. Update ALL orders for a specific meal time (Bulk Update)
-    public void updateAllStatuses(String mealOfDay, LocalDate date, String newStatus, String cook) {
-        List<MealOrders> orders = mealOrdersRepository.findByMealOfDayAndDate(mealOfDay, date);
-        
-        orders.forEach(order -> {
-            order.setStatus(newStatus.toLowerCase());
-            
-            // If the batch is being moved to preparing, assign the cook to all of them
-            if ("preparing".equalsIgnoreCase(newStatus)) {
-                order.setCook(cook);
-            }
-        });
-        
-        mealOrdersRepository.saveAll(orders);
-    }
- 
+  
 }
