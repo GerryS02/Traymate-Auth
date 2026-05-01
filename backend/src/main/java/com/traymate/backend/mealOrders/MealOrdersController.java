@@ -116,6 +116,19 @@ public class MealOrdersController {
                                  (cook != null ? " by " + cook : ""));
     }
     
+    @GetMapping("/default/{userId}")
+    public ResponseEntity<?> getDefaultMeal(@PathVariable String userId) {
+        String mostFrequentIds = mealOrdersService.getMostFrequentOrder(userId);
+
+        if (mostFrequentIds == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No order history found for this resident.");
+        }
+
+        // Returning a simple JSON object with the IDs
+        return ResponseEntity.ok(java.util.Map.of("recommendedItems", mostFrequentIds));
+    }
+    
     // 7. DELETE order
     @DeleteMapping("/remove")
     public ResponseEntity<String> deleteOrder(

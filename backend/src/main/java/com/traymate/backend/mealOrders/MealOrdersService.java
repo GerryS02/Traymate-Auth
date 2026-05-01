@@ -178,4 +178,28 @@ public class MealOrdersService {
                 .collect(Collectors.toList());
         return mealRepository.findAllById(ids);
     }
+    
+    public String getMostFrequentOrder(String userId) {
+    List<MealOrders> history = mealOrdersRepository.findByUserId(userId);
+
+    if (history.isEmpty()) {
+        return null; // No history to base a recommendation on
+    }
+
+    // 1. Create HashMap: Map<MealString, Frequency>
+    java.util.Map<String, Integer> frequencyMap = new java.util.HashMap<>();
+
+    for (MealOrders order : history) {
+        String items = order.getMealItemsIdNumbers();
+        if (items != null && !items.isEmpty()) {
+            frequencyMap.put(items, frequencyMap.getOrDefault(items, 0) + 1);
+        }
+    }
+
+    // 2. Find the meal string with the highest frequency
+    return frequencyMap.entrySet().stream()
+            .max(java.util.Map.Entry.comparingByValue())
+            .map(java.util.Map.Entry::getKey)
+            .orElse(null);
+}
 }
