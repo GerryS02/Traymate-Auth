@@ -47,6 +47,9 @@ public class SecurityConfig {
                 // Caregiver Only
                 .requestMatchers("/caregiver/**").hasAuthority("ROLE_CAREGIVER")
 
+                // Protect availability toggle
+                .requestMatchers(HttpMethod.PATCH, "/menu/*/availability")
+                .hasAnyAuthority("ROLE_KITCHEN_STAFF", "ROLE_ADMIN")
                 // Everything else requires a Bearer Token
                 .anyRequest().authenticated()
             )

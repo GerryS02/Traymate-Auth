@@ -2,7 +2,6 @@ package com.traymate.backend.menu;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,7 +46,6 @@ public class MenuController {
      * admin-only /admin/** prefix. Body: { "available": true|false }
      */
     @PatchMapping("/{id}/availability")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_KITCHEN_STAFF')")
     public Meal setAvailability(
             @PathVariable Integer id,
             @RequestBody Map<String, Boolean> body) {
