@@ -56,4 +56,14 @@ public class Meal {
 
     @Column(name = "Protein")
     private Integer protein;
+
+    //manxi's code
+    @Column(name = "name_translations", columnDefinition = "TEXT")
+    private String nameTranslations;
+
+    @Column(name = "description_translations", columnDefinition = "TEXT")
+    private String descriptionTranslations;
+
+    @Column(name = "tag_translations", columnDefinition = "TEXT")
+    private String tagTranslations;
 }
