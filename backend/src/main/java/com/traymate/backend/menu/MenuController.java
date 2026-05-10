@@ -47,7 +47,7 @@ public class MenuController {
      * admin-only /admin/** prefix. Body: { "available": true|false }
      */
     @PatchMapping("/{id}/availability")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_KITCHEN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_KITCHEN_STAFF')")
     public Meal setAvailability(
             @PathVariable Integer id,
             @RequestBody Map<String, Boolean> body) {
