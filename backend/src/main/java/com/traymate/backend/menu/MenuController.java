@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.*;
 
+import com.traymate.backend.menu.dto.UpdateMeal;
+
 import java.util.List;
 import java.util.Map;
 
@@ -55,5 +57,14 @@ public class MenuController {
                 "Request body must include 'available' boolean");
         }
         return menuService.setAvailability(id, available);
+    }
+
+    //edit meal
+    @PutMapping("/edit/{mealId}")
+    public Meal updateMeal(
+            @PathVariable Integer mealId,
+            @RequestBody UpdateMeal req) {
+
+        return menuService.updateMeal(mealId, req);
     }
 }
