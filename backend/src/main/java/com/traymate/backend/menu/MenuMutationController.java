@@ -28,11 +28,29 @@ public class MenuMutationController {
     @PostMapping
     @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_KITCHEN_STAFF','ROLE_KITCHEN')")
     @ResponseStatus(HttpStatus.CREATED)
-    public Meal create(@RequestBody Meal meal) {
+    public Meal create(@RequestBody MealCreateRequest request) {
+        Meal meal = new Meal();
+
         // Force-clear the id so callers can't overwrite an existing row by
         // sending an id in the body. New rows always start with id=null and
         // let JPA assign one via IDENTITY.
         meal.setId(null);
+        meal.setName(defaultString(request.name()));
+        meal.setIngredients(defaultString(request.ingredients()));
+        meal.setDescription(defaultString(request.description()));
+        meal.setImageUrl(defaultString(request.imageUrl()));
+        meal.setMealtype(request.mealtype());
+        meal.setMealperiod(defaultString(request.mealperiod()));
+        meal.setTimeRange(defaultString(request.timeRange()));
+        meal.setAllergenInfo(defaultString(request.allergenInfo()));
+        meal.setTags(defaultString(request.tags()));
+        meal.setAvailable(Boolean.TRUE.equals(request.available()));
+        meal.setSeasonal(Boolean.TRUE.equals(request.seasonal()));
+        meal.setNutrition(defaultString(request.nutrition()));
+        meal.setCalories(request.calories());
+        meal.setSodium(request.sodium());
+        meal.setProtein(request.protein());
+
         return mealRepository.save(meal);
     }
 
@@ -100,4 +118,26 @@ public class MenuMutationController {
         }
         mealRepository.deleteById(id);
     }
+
+    private String defaultString(String value) {
+        return value == null ? "" : value;
+    }
+
+    public record MealCreateRequest(
+        String name,
+        String ingredients,
+        String description,
+        String imageUrl,
+        String mealtype,
+        String mealperiod,
+        String timeRange,
+        String allergenInfo,
+        String tags,
+        Boolean available,
+        Boolean seasonal,
+        String nutrition,
+        Integer calories,
+        Integer sodium,
+        Integer protein
+    ) {}
 }
