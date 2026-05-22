@@ -43,7 +43,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
-        return path.startsWith("/menu");
+        // Keep GET /menu public (no auth required), but ensure non-GET
+        // menu requests (POST/PUT/PATCH/DELETE) are processed so
+        // method-level @PreAuthorize can pick up the authenticated user.
+        if (path.startsWith("/menu")) {
+            return "GET".equalsIgnoreCase(request.getMethod());
+        }
+        return false;
     }
 
 
