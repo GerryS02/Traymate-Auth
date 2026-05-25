@@ -100,6 +100,7 @@
 // }
 package com.traymate.backend.ai;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -112,9 +113,11 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
 import com.traymate.backend.admin.resident.Resident;
+import com.traymate.backend.menu.MealRepository;
 import com.traymate.backend.admin.resident.ResidentRepository;
 import com.traymate.backend.ai.dto.RecommendationRequest;
 import com.traymate.backend.ai.dto.RecommendationResponse;
+import com.traymate.backend.menu.Meal;
 
 import lombok.RequiredArgsConstructor;
 
@@ -124,6 +127,7 @@ import lombok.RequiredArgsConstructor;
 public class AiController {
 
     private final ResidentRepository residentRepository;
+    private final MealRepository mealRepository;
 
     private static final Set<String> ALLOWED_MODELS = Set.of(
         "gemini-2.5-flash",
@@ -137,7 +141,8 @@ public class AiController {
     @Value("${GEMINI_API_KEY:}")
     private String geminiApiKey;
 
-    private final RestClient http = RestClient.builder().build();
+    // private final RestClient http = RestClient.builder().build();
+    private final RestClient http = RestClient.create();
 
     /*
      * =========================================================
@@ -200,131 +205,6 @@ public class AiController {
 
     /*
      * =========================================================
-     * RESIDENT MEAL RECOMMENDATION
-     * =========================================================
-     */
-
-    @PostMapping("/recommendation")
-    public ResponseEntity<RecommendationResponse> getRecommendation(
-            @RequestBody RecommendationRequest req) {
-
-        if (geminiApiKey == null || geminiApiKey.isBlank()) {
-            throw new RuntimeException("GEMINI_API_KEY not configured");
-        }
-
-        Resident resident = residentRepository
-                .findById(req.getResidentId())
-                .orElseThrow(() ->
-                        new RuntimeException("Resident not found"));
-
-        String residentName =
-                resident.getFirstName() + " " + resident.getLastName();
-
-        String allergies =
-                resident.getFoodAllergies() == null
-                        ? "None"
-                        : resident.getFoodAllergies();
-
-        String restrictions =
-                resident.getDietaryRestrictions() == null
-                        ? "None"
-                        : resident.getDietaryRestrictions();
-
-        String medicalConditions =
-                resident.getMedicalConditions() == null
-                        ? "None"
-                        : resident.getMedicalConditions();
-
-        String medications =
-                resident.getMedications() == null
-                        ? "None"
-                        : resident.getMedications();
-
-        /*
-         * SAFE PROMPT
-         */
-        String prompt = """
-            You are an AI meal recommendation assistant for elderly residents
-            in a senior living facility.
-
-            Resident information:
-
-            Name: %s
-            Food Allergies: %s
-            Dietary Restrictions: %s
-            Medical Conditions: %s
-            Medications: %s
-
-            User Request:
-            %s
-
-            IMPORTANT RULES:
-            - NEVER recommend meals containing allergens.
-            - Respect all dietary restrictions.
-            - Prioritize healthy elderly-friendly meals.
-            - Keep recommendations concise and easy to read.
-            - Recommend 3 meal ideas maximum.
-            - Mention why each recommendation is suitable.
-            """
-            .formatted(
-                residentName,
-                allergies,
-                restrictions,
-                medicalConditions,
-                medications,
-                req.getQuestion()
-            );
-
-        Map<String, Object> body = Map.of(
-            "contents", new Object[] {
-                Map.of(
-                    "parts", new Object[] {
-                        Map.of("text", prompt)
-                    }
-                )
-            }
-        );
-
-        String url =
-            UPSTREAM_BASE +
-            "/gemini-2.0-flash:generateContent?key=" +
-            geminiApiKey;
-
-        try {
-
-            String geminiResponse = http.post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(body)
-                .retrieve()
-                .body(String.class);
-
-            return ResponseEntity.ok(
-                RecommendationResponse.builder()
-                    .residentId(resident.getId())
-                    .residentName(residentName)
-                    .foodAllergies(allergies)
-                    .dietaryRestrictions(restrictions)
-                    .recommendation(geminiResponse)
-                    .build()
-            );
-
-        } catch (RestClientResponseException ex) {
-
-            throw new RuntimeException(
-                "Gemini API error: " + ex.getResponseBodyAsString()
-            );
-
-        } catch (Exception ex) {
-
-            throw new RuntimeException(
-                "Recommendation failed: " + ex.getMessage()
-            );
-        }
-    }
-
-    /*
-     * =========================================================
      * ERROR RESPONSE
      * =========================================================
      */
@@ -341,5 +221,173 @@ public class AiController {
         return ResponseEntity.status(HttpStatusCode.valueOf(status))
             .contentType(MediaType.APPLICATION_JSON)
             .body(json);
+    }
+
+    @PostMapping("/recommendation")
+    public ResponseEntity<RecommendationResponse> getRecommendation(
+            @RequestBody RecommendationRequest req) {
+
+        try {
+
+            Resident resident = residentRepository
+                    .findById(req.getResidentId())
+                    .orElseThrow(() ->
+                            new RuntimeException("Resident not found"));
+
+            String allergies =
+                    resident.getFoodAllergies() == null
+                            ? ""
+                            : resident.getFoodAllergies().toLowerCase();
+
+            String restrictions =
+                    resident.getDietaryRestrictions() == null
+                            ? ""
+                            : resident.getDietaryRestrictions();
+
+            /*
+            * LOAD AVAILABLE MEALS
+            */
+            List<Meal> meals = mealRepository.findByAvailableTrue();
+
+            /*
+            * FILTER OUT ALLERGENS
+            */
+            List<Meal> safeMeals = meals.stream()
+
+                    .filter(meal -> {
+
+                        String allergenInfo =
+                                meal.getAllergenInfo() == null
+                                        ? ""
+                                        : meal.getAllergenInfo().toLowerCase();
+
+                        String ingredients =
+                                meal.getIngredients() == null
+                                        ? ""
+                                        : meal.getIngredients().toLowerCase();
+
+                        /*
+                        * VERY SIMPLE ALLERGY FILTER
+                        */
+                        if (!allergies.isBlank()) {
+
+                            String[] allergyList = allergies.split(",");
+
+                            for (String allergy : allergyList) {
+
+                                String trimmed = allergy.trim();
+
+                                if (allergenInfo.contains(trimmed)
+                                        || ingredients.contains(trimmed)) {
+
+                                    return false;
+                                }
+                            }
+                        }
+
+                        return true;
+                    })
+
+                    .limit(15)
+                    .toList();
+
+            /*
+            * BUILD SAFE MEAL LIST
+            */
+            StringBuilder mealText = new StringBuilder();
+
+            for (Meal meal : safeMeals) {
+
+                mealText.append("""
+                    Meal: %s
+                    Description: %s
+                    Ingredients: %s
+                    Tags: %s
+
+                    """.formatted(
+                        meal.getName(),
+                        meal.getDescription(),
+                        meal.getIngredients(),
+                        meal.getTags()
+                ));
+            }
+
+            /*
+            * GEMINI PROMPT
+            */
+            String prompt = """
+                You are a meal recommendation assistant for elderly residents.
+
+                Resident dietary restrictions:
+                %s
+
+                User request:
+                %s
+
+                ONLY recommend meals from this safe list:
+
+                %s
+
+                Rules:
+                - Recommend at most 3 meals
+                - Keep responses concise
+                - Explain briefly why each meal fits
+                - NEVER mention meals outside the provided list
+                """
+                .formatted(
+                    restrictions,
+                    req.getQuestion(),
+                    mealText
+                );
+
+            Map<String, Object> body = Map.of(
+                "contents", java.util.List.of(
+                    Map.of(
+                        "parts", java.util.List.of(
+                            Map.of("text", prompt)
+                        )
+                    )
+                )
+            );
+
+            String url =
+                    UPSTREAM_BASE +
+                    "/gemini-2.5-flash:generateContent?key=" +
+                    geminiApiKey;
+
+            String geminiResponse = http.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .body(String.class);
+
+            return ResponseEntity.ok(
+                    RecommendationResponse.builder()
+                            .residentId(resident.getId())
+                            .residentName(
+                                    resident.getFirstName()
+                                            + " "
+                                            + resident.getLastName()
+                            )
+                            .allergies(allergies)
+                            .dietaryRestrictions(restrictions)
+                            .recommendation(geminiResponse)
+                            .build()
+            );
+
+        } catch (Exception ex) {
+
+            ex.printStackTrace();
+
+            return ResponseEntity.internalServerError().body(
+                    RecommendationResponse.builder()
+                            .recommendation(
+                                    "Recommendation failed: "
+                                            + ex.getMessage()
+                            )
+                            .build()
+            );
+        }
     }
 }
