@@ -115,6 +115,8 @@ import org.springframework.web.client.RestClientResponseException;
 import com.traymate.backend.admin.resident.Resident;
 import com.traymate.backend.menu.MealRepository;
 import com.traymate.backend.admin.resident.ResidentRepository;
+import com.traymate.backend.ai.dto.ChatRequest;
+import com.traymate.backend.ai.dto.ChatResponse;
 import com.traymate.backend.ai.dto.RecommendationRequest;
 import com.traymate.backend.ai.dto.RecommendationResponse;
 import com.traymate.backend.menu.Meal;
@@ -150,56 +152,127 @@ public class AiController {
      * =========================================================
      */
 
-    @PostMapping("/gemini")
-    public ResponseEntity<String> proxy(
-            @RequestBody Map<String, Object> payload) {
+    // @PostMapping("/gemini")
+    // public ResponseEntity<String> proxy(
+    //         @RequestBody Map<String, Object> payload) {
 
-        if (geminiApiKey == null || geminiApiKey.isBlank()) {
-            return error(500, "GEMINI_API_KEY env var not set on server");
-        }
+    //     if (geminiApiKey == null || geminiApiKey.isBlank()) {
+    //         return error(500, "GEMINI_API_KEY env var not set on server");
+    //     }
 
-        Object modelObj = payload == null ? null : payload.get("model");
-        Object bodyObj  = payload == null ? null : payload.get("body");
+    //     Object modelObj = payload == null ? null : payload.get("model");
+    //     Object bodyObj  = payload == null ? null : payload.get("body");
 
-        if (!(modelObj instanceof String) || bodyObj == null) {
-            return error(
-                400,
-                "Expected JSON body { model: <string>, body: <object> }"
-            );
-        }
+    //     if (!(modelObj instanceof String) || bodyObj == null) {
+    //         return error(
+    //             400,
+    //             "Expected JSON body { model: <string>, body: <object> }"
+    //         );
+    //     }
 
-        String model = (String) modelObj;
+    //     String model = (String) modelObj;
 
-        if (!ALLOWED_MODELS.contains(model)) {
-            return error(400, "Model not allowed: " + model);
-        }
+    //     if (!ALLOWED_MODELS.contains(model)) {
+    //         return error(400, "Model not allowed: " + model);
+    //     }
 
-        String url =
-            UPSTREAM_BASE + "/" + model +
-            ":generateContent?key=" + geminiApiKey;
+    //     String url =
+    //         UPSTREAM_BASE + "/" + model +
+    //         ":generateContent?key=" + geminiApiKey;
+
+    //     try {
+
+    //         String upstreamBody = http.post()
+    //             .uri(url)
+    //             .contentType(MediaType.APPLICATION_JSON)
+    //             .body(bodyObj)
+    //             .retrieve()
+    //             .body(String.class);
+
+    //         return ResponseEntity.ok()
+    //             .contentType(MediaType.APPLICATION_JSON)
+    //             .body(upstreamBody);
+
+    //     } catch (RestClientResponseException ex) {
+
+    //         return ResponseEntity.status(ex.getStatusCode())
+    //             .contentType(MediaType.APPLICATION_JSON)
+    //             .body(ex.getResponseBodyAsString());
+
+    //     } catch (Exception ex) {
+
+    //         return error(502, "Upstream fetch failed: " + ex.getMessage());
+    //     }
+    // }
+    @PostMapping("")
+    public ResponseEntity<ChatResponse> chat(
+            @RequestBody ChatRequest req) {
 
         try {
 
-            String upstreamBody = http.post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(bodyObj)
-                .retrieve()
-                .body(String.class);
+            if (req.getMessage() == null || req.getMessage().isBlank()) {
 
-            return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(upstreamBody);
+                return ResponseEntity.badRequest().body(
+                        ChatResponse.builder()
+                                .response("Message is required")
+                                .build()
+                );
+            }
 
-        } catch (RestClientResponseException ex) {
+            String prompt = req.getMessage();
 
-            return ResponseEntity.status(ex.getStatusCode())
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(ex.getResponseBodyAsString());
+            Map<String, Object> body = Map.of(
+                    "contents", List.of(
+                            Map.of(
+                                    "parts", List.of(
+                                            Map.of("text", prompt)
+                                    )
+                            )
+                    )
+            );
+
+            String url =
+                    UPSTREAM_BASE +
+                    "/gemini-2.5-flash:generateContent?key=" +
+                    geminiApiKey;
+
+            Map response = http.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .body(Map.class);
+
+            List candidates = (List) response.get("candidates");
+
+            Map firstCandidate = (Map) candidates.get(0);
+
+            Map content = (Map) firstCandidate.get("content");
+
+            List parts = (List) content.get("parts");
+
+            Map firstPart = (Map) parts.get(0);
+
+            String aiText = (String) firstPart.get("text");
+
+            return ResponseEntity.ok(
+                    ChatResponse.builder()
+                            .response(aiText)
+                            .build()
+            );
 
         } catch (Exception ex) {
 
-            return error(502, "Upstream fetch failed: " + ex.getMessage());
+            ex.printStackTrace();
+
+            return ResponseEntity.internalServerError().body(
+                    ChatResponse.builder()
+                            .response(
+                                    "AI request failed: "
+                                            + ex.getMessage()
+                            )
+                            .build()
+            );
         }
     }
 
@@ -355,12 +428,25 @@ public class AiController {
                     "/gemini-2.5-flash:generateContent?key=" +
                     geminiApiKey;
 
-            String geminiResponse = http.post()
-                    .uri(url)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(body)
-                    .retrieve()
-                    .body(String.class);
+            // String geminiResponse = http.post()
+            //         .uri(url)
+            //         .contentType(MediaType.APPLICATION_JSON)
+            //         .body(body)
+            //         .retrieve()
+            //         .body(String.class);
+            Map response = http.post()
+            .uri(url)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(body)
+            .retrieve()
+            .body(Map.class);
+
+            List candidates = (List) response.get("candidates");
+            Map firstCandidate = (Map) candidates.get(0);
+            Map content = (Map) firstCandidate.get("content");
+            List parts = (List) content.get("parts");
+            Map firstPart = (Map) parts.get(0);
+            String aiText = (String) firstPart.get("text");
 
             return ResponseEntity.ok(
                     RecommendationResponse.builder()
@@ -372,7 +458,7 @@ public class AiController {
                             )
                             .allergies(allergies)
                             .dietaryRestrictions(restrictions)
-                            .recommendation(geminiResponse)
+                            .recommendation(aiText)
                             .build()
             );
 
