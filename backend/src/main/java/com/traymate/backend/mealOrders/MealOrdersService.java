@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,9 +29,17 @@ public class MealOrdersService {
     private final DietaryComplianceService complianceService;
     private final MedicalOverrideService overrideService;
 
+    // Facility-local timezone used when the client doesn't send a date.
+    // Render hosts run in UTC, so plain LocalDate.now() returns TOMORROW
+    // any time after ~5 PM Pacific. Seattle is Pacific Time (same IANA
+    // zone), so dinner orders placed at 6:30 PM saved as the NEXT day
+    // and disappeared from the kitchen's "today" view. Hard-coded for
+    // the showcase; promote to env var (`FACILITY_TZ`) if multi-site.
+    private static final ZoneId FACILITY_ZONE = ZoneId.of("America/Los_Angeles");
+
     public MealOrders saveOrder(MealOrders order) {
         if (order.getDate() == null) {
-            order.setDate(LocalDate.now());
+            order.setDate(LocalDate.now(FACILITY_ZONE));
         }
 
         // 1. Check for existing order conflicts

@@ -19,4 +19,10 @@ public interface MealOrdersRepository extends JpaRepository<MealOrders, Integer>
 
     //for checking if meal has been placed
     Optional<MealOrders> findByUserIdAndMealOfDayAndDate(String userId, String mealOfDay, LocalDate date);
+
+    // Cascade-delete a resident's order history when the resident is
+    // removed. Without this, deleted residents leave orphan rows in
+    // meal_orders (the resident's "remaining meals" still showed up on
+    // the kitchen dashboard after deletion).
+    void deleteByUserId(String userId);
 }
