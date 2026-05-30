@@ -165,18 +165,56 @@ public class MealOrdersService {
 
     public List<OrderResponseDTO> getUserHistoryWithDetails(String userId) {
         List<MealOrders> orders = mealOrdersRepository.findByUserId(userId);
-        return orders.stream().map(order -> {
-            List<Meal> meals = getDetailedMealsForOrder(order.getMealItemsIdNumbers());
-            return new OrderResponseDTO(order, meals);
-        }).collect(Collectors.toList());
+        return orders.stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     public List<OrderResponseDTO> getOrdersByMealAndDate(String mealOfDay, LocalDate date) {
         List<MealOrders> orders = mealOrdersRepository.findByMealOfDayAndDate(mealOfDay, date);
-        return orders.stream().map(order -> {
-            List<Meal> meals = getDetailedMealsForOrder(order.getMealItemsIdNumbers());
-            return new OrderResponseDTO(order, meals);
-        }).collect(Collectors.toList());
+        return orders.stream().map(this::toResponse).collect(Collectors.toList());
+    }
+
+    /**
+     * Build the wire DTO including the resident's display name + room.
+     * Embedding these on every order means the kitchen dashboard's room
+     * badge renders on the first frame instead of showing "—" until a
+     * separate /admin/residents call resolves the user. Falls through
+     * silently for orders whose userId isn't a valid resident id (legacy
+     * data, deleted residents) — the DTO just gets nulls and the UI
+     * keeps its existing fallback chain.
+     */
+    private OrderResponseDTO toResponse(MealOrders order) {
+        List<Meal> meals = getDetailedMealsForOrder(order.getMealItemsIdNumbers());
+        String residentName = null;
+        String residentRoom = null;
+        try {
+            if (order.getUserId() != null && !order.getUserId().isBlank()) {
+                int rid = Integer.parseInt(order.getUserId().trim());
+                Optional<Resident> opt = residentRepository.findById(rid);
+                if (opt.isPresent()) {
+                    Resident r = opt.get();
+                    residentName = formatResidentName(r);
+                    residentRoom = r.getRoomNumber();
+                }
+            }
+        } catch (NumberFormatException ignored) {
+            // userId isn't a numeric resident id — leave name/room null
+        }
+        return new OrderResponseDTO(order, meals, residentName, residentRoom);
+    }
+
+    private String formatResidentName(Resident r) {
+        StringBuilder sb = new StringBuilder();
+        if (r.getFirstName() != null && !r.getFirstName().isBlank()) sb.append(r.getFirstName().trim());
+        if (r.getMiddleName() != null && !r.getMiddleName().isBlank()) {
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(r.getMiddleName().trim());
+        }
+        if (r.getLastName() != null && !r.getLastName().isBlank()) {
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(r.getLastName().trim());
+        }
+        String name = sb.toString();
+        return name.isEmpty() ? null : name;
     }
 
     public List<Meal> getDetailedMealsForOrder(String mealItemsIdNumbers) {
