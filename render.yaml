@@ -1,0 +1,31 @@
+# Render Blueprint — source of truth for the TrayMate backend service.
+#
+# WHY THIS EXISTS:
+# Google's Gemini API (generativelanguage.googleapis.com) geo-restricts by
+# the CALLER's outbound IP and returns
+#     HTTP 400 FAILED_PRECONDITION "User location is not supported for the API use."
+# when the request originates outside a supported region. Render's non-US
+# regions (e.g. Frankfurt, Singapore) trip this, so the /ai endpoints fail
+# even though the key and code are correct. Pinning region: oregon (US West)
+# keeps every Gemini call coming from the USA.
+#
+# NOTE: Render cannot change the region of an EXISTING service. To apply this,
+# create the service from this Blueprint (New + → Blueprint), or recreate the
+# web service in Oregon/Ohio. Keep the name "traymate-auth" so the public URL
+# https://traymate-auth.onrender.com stays the same — the frontend hardcodes
+# that hostname in ~9 files.
+services:
+  - type: web
+    name: traymate-auth
+    runtime: docker
+    region: oregon            # US West — must stay a US region for Gemini
+    plan: free
+    branch: main
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    autoDeploy: true
+    envVars:
+      # Set the actual value in the Render dashboard (Environment tab).
+      # sync: false keeps the secret OUT of git.
+      - key: GEMINI_API_KEY
+        sync: false
