@@ -136,7 +136,7 @@ public class AiController {
                         - Do NOT mention outside meals
                         """.formatted(mealText, req.getMessage());
 
-                String aiText = callGemini("gemini-2.5-flash", prompt);
+                String aiText = callGemini("gemini-2.5-flash-lite", prompt);
 
                 return ResponseEntity.ok(new ChatResponse(aiText));
             }
@@ -147,7 +147,7 @@ public class AiController {
              * =====================================================
              */
 
-            String aiText = callGemini("gemini-2.5-flash", req.getMessage());
+            String aiText = callGemini("gemini-2.5-flash-lite", req.getMessage());
 
             return ResponseEntity.ok(new ChatResponse(aiText));
 
@@ -182,7 +182,7 @@ public class AiController {
 
         Object modelObj = req.get("model");
         String model = (modelObj == null || modelObj.toString().isBlank())
-                ? "gemini-2.5-flash"
+                ? "gemini-2.5-flash-lite"
                 : modelObj.toString();
 
         @SuppressWarnings("unchecked")
@@ -229,6 +229,8 @@ public class AiController {
      */
 
     private String callGemini(String model, String prompt) {
+
+        System.out.println("Using Gemini model: " + model);
 
         if (geminiApiKey == null || geminiApiKey.isBlank()) {
             return "The assistant isn't configured yet. Please try again later.";
