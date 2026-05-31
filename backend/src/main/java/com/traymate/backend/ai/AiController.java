@@ -43,7 +43,7 @@ public class AiController {
      */
 
     @PostMapping
-    public ResponseEntity<ChatResponse> handleAi(@RequestBody ChatRequest req) {
+        public ResponseEntity<?> handleAi(@RequestBody ChatRequest req) {
 
         try {
             if (req.getMessage() == null || req.getMessage().isBlank()) {
@@ -151,6 +151,10 @@ public class AiController {
 
             return ResponseEntity.ok(new ChatResponse(aiText));
 
+        } catch (RestClientResponseException ex) {
+            // Return Gemini's actual error payload so Postman shows the real cause.
+            return ResponseEntity.status(ex.getStatusCode())
+                    .body(ex.getResponseBodyAsString());
         } catch (Exception ex) {
             ex.printStackTrace();
             return ResponseEntity.internalServerError()
