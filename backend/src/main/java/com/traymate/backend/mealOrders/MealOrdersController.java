@@ -129,7 +129,7 @@ public class MealOrdersController {
         return ResponseEntity.ok(java.util.Map.of("recommendedItems", mostFrequentIds));
     }
     
-    // 7. DELETE order
+    // 7a. DELETE order by composite key (preferred — no primary key needed)
     @DeleteMapping("/remove")
     public ResponseEntity<String> deleteOrder(
         @RequestParam String userId,
@@ -139,6 +139,19 @@ public class MealOrdersController {
         LocalDate localDate = LocalDate.parse(date);
         mealOrdersService.deleteOrder(userId, mealOfDay, localDate);
         return ResponseEntity.ok("Order removed.");
+    }
+
+    // 7b. DELETE order by primary ID — fallback used by the resident app
+    // when it only has the backend order ID (e.g. after a page refresh
+    // that cleared the composite-key fields from local state).
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteOrderById(@PathVariable Integer id) {
+        try {
+            mealOrdersService.deleteOrderById(id);
+            return ResponseEntity.ok("Order removed.");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     public static record ErrorResponse(String errorCode, String message, Object data) {}

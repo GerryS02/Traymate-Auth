@@ -161,10 +161,24 @@ public class MealOrdersService {
         mealOrdersRepository.delete(order);
     }
 
+    /** Hard-delete by primary key — used when the frontend only has the order ID. */
+    @Transactional
+    public void deleteOrderById(Integer id) {
+        if (!mealOrdersRepository.existsById(id)) {
+            throw new RuntimeException("Order ID " + id + " not found");
+        }
+        mealOrdersRepository.deleteById(id);
+    }
+
     // --- Detail Hydration Methods ---
 
     public List<OrderResponseDTO> getUserHistoryWithDetails(String userId) {
-        List<MealOrders> orders = mealOrdersRepository.findByUserId(userId);
+        // Only return orders from the last 14 days. Returning all-time history
+        // causes old cancelled/completed orders to persist visually on the
+        // resident screen after they should have cleared, and bloats the
+        // in-memory CartContext on long-running sessions.
+        LocalDate cutoff = LocalDate.now(FACILITY_ZONE).minusDays(14);
+        List<MealOrders> orders = mealOrdersRepository.findByUserIdAndDateGreaterThanEqual(userId, cutoff);
         return orders.stream().map(this::toResponse).collect(Collectors.toList());
     }
 

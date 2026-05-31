@@ -11,6 +11,9 @@ public interface MealOrdersRepository extends JpaRepository<MealOrders, Integer>
     // This tells Spring: "SELECT * FROM meal_orders WHERE user_id = ?"
     List<MealOrders> findByUserId(String userId);
 
+    // History scoped to a recent date window so old orders don't pile up forever.
+    List<MealOrders> findByUserIdAndDateGreaterThanEqual(String userId, LocalDate from);
+
     // Optional: If you want to see all "pending" orders for the kitchen
     List<MealOrders> findByStatus(String status);
 
@@ -25,4 +28,7 @@ public interface MealOrdersRepository extends JpaRepository<MealOrders, Integer>
     // meal_orders (the resident's "remaining meals" still showed up on
     // the kitchen dashboard after deletion).
     void deleteByUserId(String userId);
+
+    // Bulk-delete stale orders so old test data never accumulates.
+    void deleteByDateBefore(LocalDate cutoff);
 }
