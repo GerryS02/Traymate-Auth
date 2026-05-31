@@ -36,6 +36,17 @@ public class AiController {
     private static final String GEMINI_BASE =
             "https://generativelanguage.googleapis.com/v1beta/models/";
 
+    // Models tried in order for the server-side /ai chat + recommend flow.
+    // If one 404s (model retired) / 429s (quota) / 503s (overload) we fall
+    // through to the next, so a single bad model never takes the assistant
+    // down. A 400 (geo-block) / 401 / 403 won't be fixed by switching models,
+    // so callGeminiWithFallback stops early in that case.
+    private static final List<String> CHAT_MODELS = List.of(
+            "gemini-2.5-flash-lite",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash"
+    );
+
     /*
      * =========================================================
      * SINGLE AI ENDPOINT  (POST /ai)
@@ -136,7 +147,7 @@ public class AiController {
                         - Do NOT mention outside meals
                         """.formatted(mealText, req.getMessage());
 
-                String aiText = callGemini("gemini-2.5-flash-lite", prompt);
+                String aiText = callGeminiWithFallback(prompt);
 
                 return ResponseEntity.ok(new ChatResponse(aiText));
             }
@@ -147,7 +158,7 @@ public class AiController {
              * =====================================================
              */
 
-            String aiText = callGemini("gemini-2.5-flash-lite", req.getMessage());
+            String aiText = callGeminiWithFallback(req.getMessage());
 
             return ResponseEntity.ok(new ChatResponse(aiText));
 
@@ -224,7 +235,35 @@ public class AiController {
 
     /*
      * =========================================================
-     * GEMINI CALL WRAPPER (used by the /ai chat + recommend flow)
+     * GEMINI CALL WITH MODEL FALLBACK (used by the /ai flow)
+     * ---------------------------------------------------------
+     * Tries each model in CHAT_MODELS until one answers. Only switches
+     * models on errors a different model could plausibly fix (404 / 429 /
+     * 503). Geo-block (400) and auth (401/403) abort immediately because
+     * every model would fail identically.
+     * =========================================================
+     */
+    private String callGeminiWithFallback(String prompt) {
+        RestClientResponseException last = null;
+        for (String model : CHAT_MODELS) {
+            try {
+                return callGemini(model, prompt);
+            } catch (RestClientResponseException ex) {
+                last = ex;
+                int code = ex.getStatusCode().value();
+                boolean tryNext = (code == 404 || code == 429 || code == 503);
+                System.err.println("[Gemini] model " + model + " failed HTTP " + code
+                        + (tryNext ? " — trying next model" : " — aborting fallback"));
+                if (!tryNext) break; // 400 geo-block / 401 / 403 — no other model helps
+            }
+        }
+        if (last != null) throw last;
+        return "Sorry, I couldn't come up with a response right now.";
+    }
+
+    /*
+     * =========================================================
+     * GEMINI CALL WRAPPER (single model)
      * =========================================================
      */
 
