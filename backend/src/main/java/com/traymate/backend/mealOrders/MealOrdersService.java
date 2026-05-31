@@ -161,6 +161,12 @@ public class MealOrdersService {
         mealOrdersRepository.delete(order);
     }
 
+    /** Bulk-delete all orders older than the given cutoff. Called on startup to purge stale records. */
+    @Transactional
+    public void deleteOrdersBefore(LocalDate cutoff) {
+        mealOrdersRepository.deleteByDateBefore(cutoff);
+    }
+
     /** Hard-delete by primary key — used when the frontend only has the order ID. */
     @Transactional
     public void deleteOrderById(Integer id) {

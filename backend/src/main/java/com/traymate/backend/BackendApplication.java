@@ -1,11 +1,10 @@
 package com.traymate.backend;
 
-import com.traymate.backend.mealOrders.MealOrdersRepository;
+import com.traymate.backend.mealOrders.MealOrdersService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -20,14 +19,18 @@ public class BackendApplication {
 	}
 
 	// Wipe stale orders older than 7 days every time the server starts.
-	// This ensures old test/March-April records never pile up in the DB
-	// and prevents them from showing up on the resident or kitchen screens.
+	// Routed through MealOrdersService so the delete runs inside its own
+	// @Transactional context. Wrapped in try-catch so a DB hiccup on boot
+	// never prevents the server from starting.
 	@Bean
-	@Transactional
-	CommandLineRunner cleanupStaleOrders(MealOrdersRepository repo) {
+	CommandLineRunner cleanupStaleOrders(MealOrdersService mealOrdersService) {
 		return args -> {
-			LocalDate cutoff = LocalDate.now(FACILITY_ZONE).minusDays(7);
-			repo.deleteByDateBefore(cutoff);
+			try {
+				LocalDate cutoff = LocalDate.now(FACILITY_ZONE).minusDays(7);
+				mealOrdersService.deleteOrdersBefore(cutoff);
+			} catch (Exception e) {
+				System.err.println("[Startup] Stale order cleanup failed (non-fatal): " + e.getMessage());
+			}
 		};
 	}
 
