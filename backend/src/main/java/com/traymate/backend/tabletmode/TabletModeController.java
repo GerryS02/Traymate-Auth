@@ -18,21 +18,24 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Tablet (kiosk) mode admin endpoints.
+ * Tablet (kiosk) mode endpoints.
  *
  * Two pieces of state are managed here:
- *   - per-resident on/off flag (residents.tablet_mode)
- *   - facility-wide unlock PIN  (app_settings[tablet.pin])
+ *   - per-resident on/off flag (residents.tablet_mode)  — ADMIN only
+ *   - facility-wide unlock PIN  (app_settings[tablet.pin]) — ADMIN + CAREGIVER
  *
- * Both are admin-only. The PIN is intentionally readable so the
- * admin UI can show "current PIN: 1234" before letting them change it.
- * That's fine because the same admin can already toggle the mode and
- * change residents at will — knowledge of the PIN doesn't grant any
- * privilege a logged-in admin doesn't already have.
+ * The PIN is what staff type to unlock a locked resident dashboard, and
+ * it's stored facility-wide so every tablet uses the same code. Caregivers
+ * work the floor and need to view/set that PIN too, so the PIN endpoints
+ * live at a neutral path (/tablet/pin) and allow both roles. The
+ * per-resident toggle stays admin-only under /admin.
+ *
+ * The PIN is intentionally readable so the UI can show "current PIN: 1234"
+ * before letting staff change it — knowledge of the PIN doesn't grant any
+ * privilege a logged-in staff member doesn't already have.
  */
 @Slf4j
 @RestController
-@RequestMapping("/admin")
 @RequiredArgsConstructor
 public class TabletModeController {
 
@@ -44,7 +47,7 @@ public class TabletModeController {
 
     // ── Per-resident toggle ─────────────────────────────────────
 
-    @PutMapping("/residents/{id}/tablet-mode")
+    @PutMapping("/admin/residents/{id}/tablet-mode")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<Map<String, Object>> setTabletMode(
             @PathVariable Integer id,
@@ -65,10 +68,14 @@ public class TabletModeController {
         ));
     }
 
-    // ── Facility-wide PIN ───────────────────────────────────────
+    // ── Facility-wide PIN (admin + caregiver) ───────────────────
+    // Lives at /tablet/pin (not /admin) so caregivers can reach it —
+    // SecurityConfig restricts /admin/** to ROLE_ADMIN. Role enforcement
+    // here is via @PreAuthorize; /tablet/** falls through to the
+    // authenticated() catch-all in SecurityConfig.
 
-    @GetMapping("/settings/tablet-pin")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @GetMapping("/tablet/pin")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_CAREGIVER')")
     public ResponseEntity<Map<String, String>> getPin() {
         String pin = appSettingRepository.findById(PIN_KEY)
             .map(AppSetting::getValue)
@@ -76,8 +83,8 @@ public class TabletModeController {
         return ResponseEntity.ok(Map.of("pin", pin));
     }
 
-    @PutMapping("/settings/tablet-pin")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PutMapping("/tablet/pin")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_CAREGIVER')")
     public ResponseEntity<Map<String, String>> setPin(@RequestBody Map<String, String> body) {
         String pin = body.get("pin");
         if (pin == null || !pin.matches("^\\d{4,6}$")) {
