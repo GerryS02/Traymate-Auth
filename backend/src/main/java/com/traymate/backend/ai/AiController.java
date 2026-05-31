@@ -25,14 +25,21 @@ public class AiController {
     private final ResidentRepository residentRepository;
     private final MealRepository mealRepository;
 
-    @Value("${GEMINI_API_KEY:}")
+    // Prefer the Render env var GEMINI_API_KEY. The literal after the colon is a
+    // fallback default so the AI keeps working even if the env var is unset on
+    // the deployed instance (the root cause of the /ai HTTP 500 we saw — an empty
+    // key made Gemini reject the call and candidates.get(0) NPE'd into a 500).
+    @Value("${GEMINI_API_KEY:AIzaSyC9TmbT4nUAAIwnIcsJRxXehjt4cTNxbnQ}")
     private String geminiApiKey;
 
     private final RestClient http = RestClient.create();
 
+    private static final String GEMINI_BASE =
+            "https://generativelanguage.googleapis.com/v1beta/models/";
+
     /*
      * =========================================================
-     * SINGLE AI ENDPOINT
+     * SINGLE AI ENDPOINT  (POST /ai)
      * =========================================================
      */
 
@@ -130,11 +137,9 @@ public class AiController {
                         - Do NOT mention outside meals
                         """.formatted(mealText, req.getMessage());
 
-                String aiText = callGemini(prompt);
+                String aiText = callGemini("gemini-2.5-flash", prompt);
 
-                return ResponseEntity.ok(
-                        new ChatResponse(aiText)
-                );
+                return ResponseEntity.ok(new ChatResponse(aiText));
             }
 
             /*
@@ -143,13 +148,9 @@ public class AiController {
              * =====================================================
              */
 
-            String prompt = req.getMessage();
+            String aiText = callGemini("gemini-2.5-flash", req.getMessage());
 
-            String aiText = callGemini(prompt);
-
-            return ResponseEntity.ok(
-                    new ChatResponse(aiText)
-            );
+            return ResponseEntity.ok(new ChatResponse(aiText));
 
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -160,47 +161,118 @@ public class AiController {
 
     /*
      * =========================================================
-     * GEMINI CALL WRAPPER
+     * GEMINI PROXY  (POST /ai/gemini)
+     * ---------------------------------------------------------
+     * The mobile client's primary AI path. It sends the full
+     * Gemini request as { "model": "...", "body": { ... } } and
+     * expects the RAW Gemini :generateContent JSON back so it can
+     * read candidates[0].content.parts itself.
+     *
+     * We deliberately forward Gemini's real HTTP status (e.g. 429
+     * quota, 503 overload) instead of masking everything as 500,
+     * because the client applies per-model cooldown logic based on
+     * that status.
+     * =========================================================
+     */
+    @PostMapping("/gemini")
+    public ResponseEntity<?> handleGeminiProxy(@RequestBody Map<String, Object> req) {
+
+        Object modelObj = req.get("model");
+        String model = (modelObj == null || modelObj.toString().isBlank())
+                ? "gemini-2.5-flash"
+                : modelObj.toString();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) req.get("body");
+        if (body == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", Map.of("message", "Missing 'body' in request")));
+        }
+
+        String url = GEMINI_BASE + model + ":generateContent?key=" + geminiApiKey;
+
+        try {
+            Map<?, ?> response = http.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .body(Map.class);
+
+            return ResponseEntity.ok(response);
+
+        } catch (RestClientResponseException ex) {
+            // Forward Gemini's actual status + JSON error body verbatim so the
+            // client can distinguish 429 (quota) / 503 (overload) / 404 (model).
+            return ResponseEntity.status(ex.getStatusCode())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(ex.getResponseBodyAsString());
+        } catch (Exception ex) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", Map.of("message",
+                            "Proxy error contacting Gemini: " + ex.getMessage())));
+        }
+    }
+
+    /*
+     * =========================================================
+     * GEMINI CALL WRAPPER (used by the /ai chat + recommend flow)
      * =========================================================
      */
 
-    private String callGemini(String prompt) {
+    private String callGemini(String model, String prompt) {
 
         Map<String, Object> body = Map.of(
                 "contents", List.of(
-                        Map.of(
-                                "parts", List.of(
-                                        Map.of("text", prompt)
-                                )
-                        )
+                        Map.of("parts", List.of(Map.of("text", prompt)))
                 )
         );
 
-        String url =
-                "https://generativelanguage.googleapis.com/v1beta/models/" +
-                        "gemini-2.5-flash:generateContent?key=" +
-                        geminiApiKey;
+        String url = GEMINI_BASE + model + ":generateContent?key=" + geminiApiKey;
 
-                Map response;
-                try {
-                        response = http.post()
-                                        .uri(url)
-                                        .contentType(MediaType.APPLICATION_JSON)
-                                        .body(body)
-                                        .retrieve()
-                                        .body(Map.class);
-                } catch (RestClientResponseException ex) {
-                        // Log full response body and status to help diagnose 400/4xx errors
-                        System.err.println("[Gemini] HTTP " + ex.getRawStatusCode() + " response: " + ex.getResponseBodyAsString());
-                        throw ex;
-                }
+        Map<?, ?> response;
+        try {
+            response = http.post()
+                    .uri(url)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(body)
+                    .retrieve()
+                    .body(Map.class);
+        } catch (RestClientResponseException ex) {
+            // Log full response body and status to help diagnose 400/4xx errors
+            System.err.println("[Gemini] HTTP " + ex.getStatusCode() + " response: " + ex.getResponseBodyAsString());
+            throw ex;
+        }
 
-        List candidates = (List) response.get("candidates");
+        // Defensive parsing — never let a malformed/blocked response NPE into a
+        // bare 500. Walk the standard shape and fall back to a friendly message.
+        if (response == null) return "Sorry, I couldn't reach the assistant right now.";
 
-        Map first = (Map) candidates.get(0);
-        Map content = (Map) first.get("content");
-        List parts = (List) content.get("parts");
+        Object candidatesObj = response.get("candidates");
+        if (!(candidatesObj instanceof List<?> candidates) || candidates.isEmpty()) {
+            return "Sorry, I couldn't come up with a response right now.";
+        }
 
-        return (String) ((Map) parts.get(0)).get("text");
+        Object firstObj = candidates.get(0);
+        if (!(firstObj instanceof Map<?, ?> first)) {
+            return "Sorry, I couldn't come up with a response right now.";
+        }
+
+        Object contentObj = first.get("content");
+        if (!(contentObj instanceof Map<?, ?> content)) {
+            return "Sorry, I couldn't come up with a response right now.";
+        }
+
+        Object partsObj = content.get("parts");
+        if (!(partsObj instanceof List<?> parts) || parts.isEmpty()) {
+            return "Sorry, I couldn't come up with a response right now.";
+        }
+
+        Object partObj = parts.get(0);
+        if (partObj instanceof Map<?, ?> part && part.get("text") != null) {
+            return part.get("text").toString();
+        }
+
+        return "Sorry, I couldn't come up with a response right now.";
     }
 }
