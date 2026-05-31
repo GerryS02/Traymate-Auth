@@ -25,11 +25,10 @@ public class AiController {
     private final ResidentRepository residentRepository;
     private final MealRepository mealRepository;
 
-    // Prefer the Render env var GEMINI_API_KEY. The literal after the colon is a
-    // fallback default so the AI keeps working even if the env var is unset on
-    // the deployed instance (the root cause of the /ai HTTP 500 we saw — an empty
-    // key made Gemini reject the call and candidates.get(0) NPE'd into a 500).
-    @Value("${GEMINI_API_KEY:AIzaSyC9TmbT4nUAAIwnIcsJRxXehjt4cTNxbnQ}")
+    // Set GEMINI_API_KEY in the Render dashboard (Environment tab) — never commit
+    // the literal key to git. If the env var is missing, callGemini() returns a
+    // friendly fallback message instead of NPE-ing into a 500.
+    @Value("${GEMINI_API_KEY:}")
     private String geminiApiKey;
 
     private final RestClient http = RestClient.create();
@@ -189,6 +188,11 @@ public class AiController {
                     .body(Map.of("error", Map.of("message", "Missing 'body' in request")));
         }
 
+        if (geminiApiKey == null || geminiApiKey.isBlank()) {
+            return ResponseEntity.status(503)
+                    .body(Map.of("error", Map.of("message", "GEMINI_API_KEY not configured on server")));
+        }
+
         String url = GEMINI_BASE + model + ":generateContent?key=" + geminiApiKey;
 
         try {
@@ -221,6 +225,10 @@ public class AiController {
      */
 
     private String callGemini(String model, String prompt) {
+
+        if (geminiApiKey == null || geminiApiKey.isBlank()) {
+            return "The assistant isn't configured yet. Please try again later.";
+        }
 
         Map<String, Object> body = Map.of(
                 "contents", List.of(
