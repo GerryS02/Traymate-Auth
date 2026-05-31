@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
 import java.util.Map;
@@ -180,12 +181,19 @@ public class AiController {
                         "gemini-2.5-flash:generateContent?key=" +
                         geminiApiKey;
 
-        Map response = http.post()
-                .uri(url)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(body)
-                .retrieve()
-                .body(Map.class);
+                Map response;
+                try {
+                        response = http.post()
+                                        .uri(url)
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .body(body)
+                                        .retrieve()
+                                        .body(Map.class);
+                } catch (RestClientResponseException ex) {
+                        // Log full response body and status to help diagnose 400/4xx errors
+                        System.err.println("[Gemini] HTTP " + ex.getRawStatusCode() + " response: " + ex.getResponseBodyAsString());
+                        throw ex;
+                }
 
         List candidates = (List) response.get("candidates");
 
