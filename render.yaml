@@ -25,7 +25,16 @@ services:
     dockerContext: ./backend
     autoDeploy: true
     envVars:
-      # Set the actual value in the Render dashboard (Environment tab).
-      # sync: false keeps the secret OUT of git.
+      # All secrets use sync: false → kept OUT of git; Render prompts for each
+      # value when the Blueprint is applied. These MUST all be set or the
+      # service boot-crashes (DB_* are required by application.properties).
+      # Copy the existing values from the current service's Environment tab
+      # BEFORE recreating, so you can paste them straight back in.
       - key: GEMINI_API_KEY
+        sync: false
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
         sync: false
